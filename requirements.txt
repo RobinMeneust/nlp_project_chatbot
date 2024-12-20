@@ -1,0 +1,16 @@
+torch
+torchvision
+torchaudio
+lightning
+wget
+matplotlib
+tensorboard
+sentence-transformers==3.3.1
+transformers==4.47.1
+langchain
+langchain-community
+unstructured
+langchain-unstructured
+langchain-chroma
+langgraph
+pypdf

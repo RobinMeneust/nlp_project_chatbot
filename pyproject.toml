@@ -1,0 +1,17 @@
+[project]
+dynamic = ["dependencies"]
+name = "chatbotrag"
+version = "0.0.1"
+authors = [
+  {name = "Maxime Cabrit"},
+  {name = "Ethan Pinto"},
+  {name = "Robin Meneust"},
+]
+description = "Chat Bot with RAG"
+readme = "README.md"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.pip]
+extra-index-url = ["https://download.pytorch.org/whl/cu124"]
