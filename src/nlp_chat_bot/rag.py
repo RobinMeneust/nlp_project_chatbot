@@ -10,8 +10,8 @@ class State(TypedDict):
     context: List[Document]
     answer: str
 
-class RAG():
-    def __init__(self, dataset_path, splitter, vector_store, llm=None):
+class RAG:
+    def __init__(self, dataset_path, vector_store, splitter=None, llm=None):
         print("WARNING: No LLM model provided. Only retrieval can be performed.")
         self.document_loader = DocumentLoader()
         self.splitter = splitter
@@ -22,8 +22,9 @@ class RAG():
         self._store_documents(dataset_path)
     
     def _store_documents(self, data_path):
-        docs = self.document_loader.load(data_path)                
-        docs = self.splitter.split_documents(docs)
+        docs = self.document_loader.load(data_path)
+        if self.splitter is not None:
+            docs = self.splitter.split_documents(docs)
         
         if not docs or len(docs) == 0:
             raise ValueError("No document found")
@@ -54,36 +55,3 @@ class RAG():
         graph_builder = StateGraph(State).add_sequence([self.retrieve, self.generate])
         graph_builder.add_edge(START, "retrieve")
         return graph_builder.compile()
-    
-
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_chroma  import Chroma
-from nlp_chat_bot.model.minilm import MiniLM
-
-if __name__ == "__main__":
-    dataset_path = "data"
-    
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=100,  # chunk size (characters)
-        chunk_overlap=10,  # chunk overlap (characters)
-        add_start_index=True,  # track index in original document
-    )
-    
-    minilm = MiniLM(model_download_path="models")
-    vector_store = Chroma(embedding_function=minilm)
-    rag = RAG(dataset_path, splitter, vector_store)
-    print("LENGTH", len(vector_store.get()['documents']))
-    docs_retrieved = rag.retrieve(state = {"question": "What is the acronym AIA?", "context": []})
-    
-    print("Num docs:", len(docs_retrieved["context"]))
-    
-    for i in range(len(docs_retrieved["context"])):
-        doc = docs_retrieved["context"][i]
-        print("\n\n", "#"*30,"\n")
-        print(f"doc {i}: (score: {doc.metadata['score']})")
-        print(doc.page_content)
-    print(docs_retrieved["context"][0].page_content)    
-    
-    # state = {"question": "What are some ways to reduce stress?", "context": []}
-    # response = rag.invoke(state)
-    # print(response)
