@@ -37,6 +37,14 @@ class RAG:
             raise ValueError("No document found")
 
         chroma_client = chromadb.Client()
+
+        # if collection exist, delete it
+        try:
+            chroma_client.delete_collection("chatbot_docs_collection")
+            print("The collection already existed and was deleted")
+        except:
+            pass
+
         collection = chroma_client.create_collection(name="chatbot_docs_collection")
 
         if self._is_late_chunking:
