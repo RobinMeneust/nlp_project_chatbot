@@ -50,6 +50,26 @@ class ChromaVectorStoreBuilder:
                 ids=added_ids
            )
 
+    def _filter_existing_docs(self, collection, docs, late_chunking_splitter=None):
+        if late_chunking_splitter is not None:
+            filtered_docs = []
+            for doc in docs:
+                docs_chunks = late_chunking_splitter.split_documents([doc])
+                filtered_chunks = self._filter_existing_docs(collection, docs_chunks)
+                if len(filtered_chunks) > 0:
+                    # Some chunks are new
+                    filtered_docs.append(doc)
+            return filtered_docs
+        else:
+            existing_ids = set(collection.get()["ids"])
+            ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in docs]
+
+            filtered_docs = []
+            for i in range(len(ids)):
+                if ids[i] not in existing_ids:
+                    filtered_docs.append(docs[i])
+
+        return filtered_docs
 
     def _init_vector_store(self, data_path):
         docs = self._document_loader.load(data_path)
@@ -64,19 +84,20 @@ class ChromaVectorStoreBuilder:
             # 1st split so that the model can handle the input
             splitter_max_tokens = self._embedding_function.get_splitter_max_tokens()
             docs = splitter_max_tokens.split_documents(docs)
-
-            print(f"Embedding and storing {len(docs)} documents...")
+            docs = self._filter_existing_docs(collection, docs, self._embedding_function.get_splitter())
 
             # 2nd split (late chunking)
             splitter = self._embedding_function.get_splitter()
             split_docs = splitter.split_documents(docs)
+            print(f"Embedding and storing {len(split_docs)} new documents...")
 
             embeddings = self._embedding_function.embed_documents([d.page_content for d in docs])
             self._add_unique_to_collection(collection, split_docs, embeddings)
         else:
             if self._splitter is not None:
                 docs = self._splitter.split_documents(docs)
-            print(f"Embedding and storing {len(docs)} chunks...")
+            docs = self._filter_existing_docs(collection, docs)
+            print(f"Embedding and storing {len(docs)} new documents...")
             embeddings = self._embedding_function.embed_documents([d.page_content for d in docs])
             self._add_unique_to_collection(collection, docs, embeddings)
 

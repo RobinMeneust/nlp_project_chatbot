@@ -1,37 +1,38 @@
 import streamlit as st
 from nlp_chat_bot.app import ChatBotApp
 
-if __name__ == "__main__":
-    if "app" not in st.session_state:
-        with st.spinner('Loading documents...'):
-            st.session_state.app = ChatBotApp()
+# It should not be put in a if __name__ = "main" block (https://stackoverflow.com/questions/58787589/why-does-my-streamlit-application-open-multiple-times
 
-    # App Initialization
-    st.title(st.session_state.app.get_name())
+if "app" not in st.session_state:
+    with st.spinner('Loading documents...'):
+        st.session_state.app = ChatBotApp()
 
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# App Initialization
+st.title(st.session_state.app.get_name())
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    # React to user input
-    if prompt := st.chat_input("How can I help you?"):
-        # Display user message in chat message container
-        st.chat_message("user").markdown(prompt)
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+# React to user input
+if prompt := st.chat_input("How can I help you?"):
+    # Display user message in chat message container
+    st.chat_message("user").markdown(prompt)
 
-        generated_answer = st.session_state.app.invoke(query={"question": prompt})["answer"]
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-        response = f"{st.session_state.app.get_name()}: {generated_answer}"
+    generated_answer = st.session_state.app.invoke(query={"question": prompt})["answer"]
 
-        # Display assistant response in chat message container
-        with st.chat_message("assistant"):
-            st.markdown(response)
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
+    response = f"{st.session_state.app.get_name()}: {generated_answer}"
+
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        st.markdown(response)
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": response})

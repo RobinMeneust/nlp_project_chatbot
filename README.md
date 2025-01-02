@@ -17,3 +17,5 @@ In `.env` change GOOGLE_API_KEY=... with your own key (https://aistudio.google.c
 ## Usage
 
 `python -m streamlit run src/nlp_chat_bot/start_app.py`
+
+**Important**: Don't open multiple tabs of the app in the same browser, it will cause issues: (https://stackoverflow.com/questions/76474732/why-is-the-code-executed-multiple-times-whenever-streamlit-is-started)
