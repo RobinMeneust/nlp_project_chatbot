@@ -15,7 +15,8 @@ class State(TypedDict):
 
 class RAG:
     def __init__(self, dataset_path, embedding_function=None, splitter=None, llm=None, late_chunking=False, vector_store=None):
-        print("WARNING: No LLM model provided. Only retrieval can be performed.")
+        if llm is None:
+            print("WARNING: No LLM model provided. Only retrieval can be performed.")
         self._is_late_chunking = late_chunking
         self.document_loader = DocumentLoader()
         self.embedding_function = embedding_function

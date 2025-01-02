@@ -6,9 +6,6 @@ class MiniLM:
     def __init__(self, model_download_path):
         self.model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", cache_folder=model_download_path)
 
-    def __call__(self, input):
-        return self.model.encode(input)
-
     def embed_documents(self, docs):
         output = []
         for d in tqdm(docs):

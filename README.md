@@ -7,6 +7,8 @@
 
 Check install (first activate the environment): `python -c "import torch;torch.cuda.is_available()`
 
+In `.env` change GOOGLE_API_KEY=... with your own key (https://aistudio.google.com/u/1/apikey).
+
 ## Usage
 
-`python src/nlp_chat_bot/rag.py`
+`python -m streamlit run src/nlp_chat_bot/app.py`

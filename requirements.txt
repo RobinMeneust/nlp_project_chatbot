@@ -14,3 +14,5 @@ langgraph
 pypdf
 numpy
 langchain-google-genai
+streamlit
+python-dotenv
