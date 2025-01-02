@@ -16,4 +16,4 @@ In `.env` change GOOGLE_API_KEY=... with your own key (https://aistudio.google.c
 
 ## Usage
 
-`python -m streamlit run src/nlp_chat_bot/app.py`
+`python -m streamlit run src/nlp_chat_bot/start_app.py`
