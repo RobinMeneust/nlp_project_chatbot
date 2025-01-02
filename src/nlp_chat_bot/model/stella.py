@@ -16,3 +16,6 @@ class Stella:
     def embed_query(self, query):
         return self.model.encode(query)
 
+    def get_id(self):
+        return "stella"
+

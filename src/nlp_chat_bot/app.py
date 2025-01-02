@@ -11,37 +11,38 @@ from nlp_chat_bot.model.late_chunking_embedding import LateChunkingEmbedding
 from dotenv import load_dotenv
 
 class ChatBotApp:
-    def __init__(self):
+    def __init__(self, chatbot_name="chatbot_name"):
+        self._chatbot_name = chatbot_name
+
         self._rag = self._init_rag()
-        self._start_app()
+        self._init_app()
 
     def _init_rag(self):
+        print("Initializing RAG...")
         # get current file parent
         root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         model_download_path = os.path.join(root_path, "models")
         dataset_path = os.path.join(root_path, "data")
-        print("Initializing RAG...")
+        vector_store_path = os.path.join(root_path, "chromadb")
 
         load_dotenv()
-        if "GOOGLE_API_KEY" not in os.environ:
-            os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 
         embedding_function = LateChunkingEmbedding(model_download_path)
 
         llm_gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
-        return RAG(dataset_path, embedding_function, late_chunking=True, llm=llm_gemini)
+        return RAG(dataset_path, embedding_function, vector_store_path, late_chunking=True, llm=llm_gemini)
 
-    def _start_app(self):
+    def _init_app(self):
         print("Starting App...")
-        chatbot_name = "chatbot_name"
 
         # App Initialization
-        st.title(chatbot_name)
+        st.title(self._chatbot_name)
 
         # Initialize chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
+    def interact(self):
         # Display chat messages from history on app rerun
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
@@ -57,7 +58,7 @@ class ChatBotApp:
 
             generated_answer = self._rag.invoke(query={"question": prompt})["answer"]
 
-            response = f"{chatbot_name}: {generated_answer}"
+            response = f"{self._chatbot_name}: {generated_answer}"
 
             # Display assistant response in chat message container
             with st.chat_message("assistant"):
@@ -65,7 +66,10 @@ class ChatBotApp:
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": response})
 
-        # self._rag.invoke(query={"question":"What is the the article 93 of GRPD?"})
-
 if __name__ == "__main__":
-    ChatBotApp()
+    if "app" not in st.session_state:
+        st.session_state.app = ChatBotApp()
+
+
+
+    st.session_state.app.interact()

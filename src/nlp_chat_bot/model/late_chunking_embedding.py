@@ -121,6 +121,9 @@ class LateChunkingEmbedding:
     def embed_query(self, query):
         return self._model.encode(query)
 
+    def get_id(self):
+        return "late_chunking_embedding"
+
 # import os
 # from langchain_text_splitters import RecursiveCharacterTextSplitter
 # if __name__ == "__main__":

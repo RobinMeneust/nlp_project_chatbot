@@ -14,3 +14,6 @@ class MiniLM:
 
     def embed_query(self, query):
         return self.model.encode(query) #self.model.encode(query).tolist()
+
+    def get_id(self):
+        return "minilm"
