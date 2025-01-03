@@ -8,7 +8,7 @@ class MiniLM:
 
     def embed_documents(self, docs):
         output = []
-        for d in tqdm(docs):
+        for d in docs:
             output.append(self.model.encode(d).tolist())
         return output
 

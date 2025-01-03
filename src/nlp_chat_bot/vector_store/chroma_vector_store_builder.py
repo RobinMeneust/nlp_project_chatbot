@@ -4,6 +4,7 @@ from gc import collect
 import chromadb
 import langchain_chroma
 from langchain_chroma import Chroma
+from tqdm import tqdm
 
 from nlp_chat_bot.doc_loader.document_loader import DocumentLoader
 
@@ -86,19 +87,20 @@ class ChromaVectorStoreBuilder:
             docs = splitter_max_tokens.split_documents(docs)
             docs = self._filter_existing_docs(collection, docs, self._embedding_function.get_splitter())
 
-            # 2nd split (late chunking)
-            splitter = self._embedding_function.get_splitter()
-            split_docs = splitter.split_documents(docs)
-            print(f"Embedding and storing {len(split_docs)} new documents...")
-
-            embeddings = self._embedding_function.embed_documents([d.page_content for d in docs])
-            self._add_unique_to_collection(collection, split_docs, embeddings)
+            print(f"Embedding and storing {len(docs)} new documents...")
+            for d in tqdm(docs):
+                # 2nd split (late chunking)
+                splitter = self._embedding_function.get_splitter()
+                split_docs = splitter.split_documents([d])
+                embeddings = self._embedding_function.embed_documents([d.page_content])
+                self._add_unique_to_collection(collection, split_docs, embeddings)
         else:
             if self._splitter is not None:
                 docs = self._splitter.split_documents(docs)
             docs = self._filter_existing_docs(collection, docs)
             print(f"Embedding and storing {len(docs)} new documents...")
-            embeddings = self._embedding_function.embed_documents([d.page_content for d in docs])
-            self._add_unique_to_collection(collection, docs, embeddings)
+            for d in tqdm(docs):
+                embeddings = self._embedding_function.embed_documents([d.page_content])
+                self._add_unique_to_collection(collection, [d], embeddings)
 
         return Chroma(client=chroma_client, collection_name=self._collection_name, embedding_function=self._embedding_function)

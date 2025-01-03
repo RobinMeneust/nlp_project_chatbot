@@ -18,4 +18,7 @@ In `.env` change GOOGLE_API_KEY=... with your own key (https://aistudio.google.c
 
 `python -m streamlit run src/nlp_chat_bot/start_app.py`
 
-**Important**: Don't open multiple tabs of the app in the same browser, it will cause issues: (https://stackoverflow.com/questions/76474732/why-is-the-code-executed-multiple-times-whenever-streamlit-is-started)
+## Possible Issues and Fixes for Streamlit
+
+- If the app runs the same code multiple times even though you started it once : don't open multiple tabs of the app in the same browser, it will cause issues: (https://stackoverflow.com/questions/76474732/why-is-the-code-executed-multiple-times-whenever-streamlit-is-started)
+- If you get Process finished with exit code -1073741819 (0xC0000005) in PyCharm, consider running the app from the terminal instead (using the command above), it fixed it for us. Maybe checking "Run with Python Console" might also fix it.

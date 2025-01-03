@@ -102,7 +102,7 @@ class LateChunkingEmbedding:
 
     def embed_documents(self, docs):
         docs_embeddings = []
-        for d in tqdm(docs):
+        for d in docs:
             inputs, _, span_annotations = self._chunk(d)
             inputs.to(self._device)
             # print(len(d), len(inputs['input_ids'][0]),"\n")
