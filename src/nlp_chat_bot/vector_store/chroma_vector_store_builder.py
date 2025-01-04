@@ -19,8 +19,8 @@ class ChromaVectorStoreBuilder:
         self._data_path = data_path
         self._collection_name = f"chatbot_docs_collection_{self._embedding_function.get_id()}"
 
-    def build(self) -> langchain_chroma.vectorstores.Chroma:
-        return self._init_vector_store(self._data_path)
+    def build(self, update_docs=True) -> langchain_chroma.vectorstores.Chroma:
+        return self._init_vector_store(self._data_path, update_docs)
 
     def _add_unique_to_collection(self, collection, docs, embeddings):
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in docs]
@@ -72,9 +72,13 @@ class ChromaVectorStoreBuilder:
 
         return filtered_docs
 
-    def _init_vector_store(self, data_path):
-        docs = self._document_loader.load(data_path)
+    def _init_vector_store(self, data_path, update_docs):
+        if not update_docs:
+            chroma_client = chromadb.PersistentClient(self._vector_store_path)
+            return Chroma(client=chroma_client, collection_name=self._collection_name, embedding_function=self._embedding_function)
 
+
+        docs = self._document_loader.load(data_path)
         if not docs or len(docs) == 0:
             raise ValueError("No document found")
 

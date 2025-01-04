@@ -11,8 +11,17 @@ from nlp_chat_bot.rag.query_translation_rag_fusion import QueryTranslationRAGFus
 
 
 class ChatBotApp:
-    def __init__(self, chatbot_name="chatbot_name"):
+    def __init__(self, chatbot_name="chatbot_name", update_docs=False, rag_model="none", is_late_chunking=True):
+        rags_models = {
+            "none": ClassicRAG,
+            "decomposition": QueryTranslationRAGDecomposition,
+            "fusion": QueryTranslationRAGFusion
+        }
         self._chatbot_name = chatbot_name
+        self._update_docs = update_docs
+        self._rag_model_class = rags_models[rag_model]
+        self._is_late_chunking = is_late_chunking
+
         self._rag = self._init_rag()
 
     def _init_rag(self):
@@ -28,7 +37,14 @@ class ChatBotApp:
         embedding_function = LateChunkingEmbedding(model_download_path)
         # embedding_function = MiniLM(model_download_path)
         llm_gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
-        return ClassicRAG(dataset_path, embedding_function, vector_store_path, late_chunking=True, llm=llm_gemini)
+        return self._rag_model_class(
+            dataset_path,
+            embedding_function,
+            vector_store_path,
+            late_chunking=self._is_late_chunking,
+            llm=llm_gemini,
+            update_docs=self._update_docs
+        )
 
     def get_name(self):
         return self._chatbot_name

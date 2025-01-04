@@ -15,7 +15,7 @@ class State(TypedDict):
     answer: str
 
 class AbstractRAG(ABC):
-    def __init__(self, dataset_path, embedding_function, vector_store_path, splitter=None, llm=None, late_chunking=False):
+    def __init__(self, dataset_path, embedding_function, vector_store_path, splitter=None, llm=None, late_chunking=False, update_docs=True):
         if llm is None:
             print("WARNING: No LLM model provided. Only retrieval can be performed.")
         self._is_late_chunking = late_chunking
@@ -23,7 +23,7 @@ class AbstractRAG(ABC):
         self.splitter = splitter
         self.prompt = hub.pull("rlm/rag-prompt")
         self.llm = llm
-        self._vector_store = ChromaVectorStoreBuilder(dataset_path, embedding_function, vector_store_path, splitter, late_chunking).build()
+        self._vector_store = ChromaVectorStoreBuilder(dataset_path, embedding_function, vector_store_path, splitter, late_chunking).build(update_docs)
         self._graph = None
 
 
