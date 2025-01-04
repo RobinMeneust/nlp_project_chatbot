@@ -2,9 +2,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 
 from nlp_chat_bot.model.minilm import MiniLM
-from nlp_chat_bot.rag import RAG
+from nlp_chat_bot.rag.classic_rag import ClassicRAG
 from nlp_chat_bot.model.late_chunking_embedding import LateChunkingEmbedding
 from dotenv import load_dotenv
+
+from nlp_chat_bot.rag.query_translation_rag_decomposition import QueryTranslationRAGDecomposition
+from nlp_chat_bot.rag.query_translation_rag_fusion import QueryTranslationRAGFusion
+
 
 class ChatBotApp:
     def __init__(self, chatbot_name="chatbot_name"):
@@ -24,7 +28,7 @@ class ChatBotApp:
         embedding_function = LateChunkingEmbedding(model_download_path)
         # embedding_function = MiniLM(model_download_path)
         llm_gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
-        return RAG(dataset_path, embedding_function, vector_store_path, late_chunking=True, llm=llm_gemini)
+        return ClassicRAG(dataset_path, embedding_function, vector_store_path, late_chunking=True, llm=llm_gemini)
 
     def get_name(self):
         return self._chatbot_name

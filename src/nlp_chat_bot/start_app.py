@@ -27,9 +27,11 @@ if prompt := st.chat_input("How can I help you?"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    generated_answer = st.session_state.app.invoke(query={"question": prompt})["answer"]
-
-    response = f"{st.session_state.app.get_name()}: {generated_answer}"
+    try:
+        response = st.session_state.app.invoke(query={"question": prompt})["answer"]
+    except Exception as e:
+        response = f"Sorry. An error occurred"
+        st.exception(e)
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
