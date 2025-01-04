@@ -45,7 +45,7 @@ class ChromaVectorStoreBuilder:
         # print(f"added_ids: {len(added_ids)}, added_docs: {len(added_docs)}, added_embeddings: {len(added_embeddings)}, existing_ids: {len(existing_ids)}")
 
         if len(added_docs) > 0:
-            collection.add(
+            collection.upsert(
                 documents=added_docs,
                 embeddings=added_embeddings,
                 ids=added_ids

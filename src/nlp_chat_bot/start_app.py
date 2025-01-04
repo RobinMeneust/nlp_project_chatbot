@@ -51,6 +51,7 @@ with st.sidebar:
 
     st.subheader("Update documents from data folder")
     st.button("Update docs", on_click=update_docs)
+    st.write("Note: Documents are stored for the current embeddings function settings. If it changes you need to re-update it so that the vector database for the new embedding function is updated.")
     st.divider()
 
 # Initialize chat history

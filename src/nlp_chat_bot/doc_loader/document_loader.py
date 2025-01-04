@@ -14,6 +14,13 @@ class DocumentLoader():
             '.txt': TextLoader
         }
 
+        self.loaders_kwargs = {
+            '.pdf': {},
+            '.csv': {"encoding": "utf-8"},
+            '.html': {},
+            '.txt': {}
+        }
+
     def load(self, data_path):
         docs = []
         for file_type, loader_cls in self.loaders.items():
@@ -21,7 +28,8 @@ class DocumentLoader():
                 path=data_path,
                 glob=f"**/*{file_type}",
                 loader_cls=loader_cls,
-                show_progress=True
+                show_progress=True,
+                loader_kwargs=self.loaders_kwargs[file_type]
             )
             docs += loader.load()
         return docs

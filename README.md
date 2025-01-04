@@ -14,6 +14,11 @@ GOOGLE_API_KEY=...
 ```
 In `.env` change GOOGLE_API_KEY=... with your own key (https://aistudio.google.com/u/1/apikey).
 
+## Datasets
+
+We tried with a personal PDF file (a project report) so that the data can't be known by the LLM model used.
+But we also used the first 1012 lines of [MPST: Movie Plot Synopses with Tags](https://www.kaggle.com/datasets/cryptexcode/mpst-movie-plot-synopses-with-tags?resource=download)
+
 ## Usage
 
 `python -m streamlit run src/nlp_chat_bot/start_app.py`
