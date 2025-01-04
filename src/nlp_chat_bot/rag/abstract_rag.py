@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from langchain_core.prompts import ChatPromptTemplate
+
 from nlp_chat_bot.doc_loader.document_loader import DocumentLoader
 from typing_extensions import List, TypedDict
 from langchain_core.documents import Document
@@ -13,6 +15,7 @@ class State(TypedDict):
     question: str
     context: List[Document]
     answer: str
+    chat_history: List[str]
 
 class AbstractRAG(ABC):
     def __init__(self, dataset_path, embedding_function, vector_store_path, splitter=None, llm=None, late_chunking=False, update_docs=True):

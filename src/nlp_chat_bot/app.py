@@ -21,6 +21,7 @@ class ChatBotApp:
         self._update_docs = update_docs
         self._rag_model_class = rags_models[rag_model]
         self._is_late_chunking = is_late_chunking
+        self.history_max_length = 5
 
         self._rag = self._init_rag()
 
@@ -49,5 +50,8 @@ class ChatBotApp:
     def get_name(self):
         return self._chatbot_name
 
-    def invoke(self, query):
+    def invoke(self, query, chat_history=None):
+        if chat_history is not None:
+            query["chat_history"] = chat_history[-self.history_max_length:]
+            return self._rag.invoke(query=query)
         return self._rag.invoke(query=query)

@@ -17,8 +17,14 @@ class ClassicRAG(AbstractRAG):
         if not self.llm:
             raise ValueError("No LLM model provided at RAG object initialization. Cannot generate response.")
         docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-        messages = self.prompt.invoke({"question": state["question"], "context": docs_content})
-        response = self.llm.invoke(messages)
+        context = docs_content
+        if "chat_history" in state:
+            context += "\n\nPrevious chat messages: " + "\n".join([item["role"] + ": " + item["content"] for item in state["chat_history"]])
+            # with open("chat_history.txt", "a+") as f:
+            #     f.write(context)
+            #     f.write("\n\n\n###########################\n\n")
+        prompt = self.prompt.invoke({"question": state["question"], "context": context})
+        response = self.llm.invoke(prompt)
         return {"answer": response.content}
     
 

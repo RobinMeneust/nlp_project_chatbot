@@ -16,6 +16,9 @@ if "app" not in st.session_state:
     with st.spinner('Loading documents...'):
         st.session_state.app = ChatBotApp()
 
+if "is_chat_history_on" not in st.session_state:
+    st.session_state.is_chat_history_on = False
+
 # App Initialization
 st.title(st.session_state.app.get_name())
 
@@ -39,13 +42,18 @@ with st.sidebar:
     st.header("Settings")
     st.divider()
 
+    st.subheader("Enable chat history")
+    with st.expander(label="Show/Hide", expanded=True):
+        st.session_state["is_chat_history_on"] = st.checkbox("Enable history", st.session_state["is_chat_history_on"])
+    st.divider()
+
     st.subheader("Choose a query translation method (classic means \"no translation\")")
-    with st.expander(label="", expanded=True):
+    with st.expander(label="Show/Hide", expanded=True):
         st.session_state["rag_mode"] = st.radio("Query translation method", ["none", "decomposition", "fusion"], index=0, on_change=update_rag)
     st.divider()
 
     st.subheader("Choose chunking mode")
-    with st.expander(label="", expanded=True):
+    with st.expander(label="Show/Hide", expanded=True):
         st.session_state["is_late_chunking"] = st.checkbox("Enable late chunking", st.session_state["is_late_chunking"], on_change=update_rag)
     st.divider()
 
@@ -72,7 +80,10 @@ if prompt := st.chat_input("How can I help you?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     try:
-        output = st.session_state.app.invoke(query={"question": prompt})
+        if st.session_state["is_chat_history_on"]:
+            output = st.session_state.app.invoke(query={"question": prompt}, chat_history=st.session_state.messages)
+        else:
+            output = st.session_state.app.invoke(query={"question": prompt})
         answer = output["answer"]
     except Exception as e:
         answer = f"Sorry. An error occurred"

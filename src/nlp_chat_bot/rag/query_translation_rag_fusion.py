@@ -20,8 +20,12 @@ class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
 
     def generate(self, state: State):
         docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-        messages = self.prompt.invoke({"question": state["question"], "context": docs_content})
-        response = self.llm.invoke(messages)
+
+        context = docs_content
+        if "chat_history" in state:
+            context += "\n\nPrevious chat messages: " + "\n".join([item["role"] + ": " + item["content"] for item in state["chat_history"]])
+        prompt = self.prompt.invoke({"question": state["question"], "context": context})
+        response = self.llm.invoke(prompt)
         return {"answer": response.content}
     
 

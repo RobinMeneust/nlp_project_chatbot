@@ -1,0 +1,243 @@
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+
+Contents
+
+hide
+
+(Top)
+
+Background
+
+Capabilities
+
+Corporate customization
+
+GPT-4o mini
+
+Scarlett Johansson controversy
+
+See also
+
+References
+
+GPT-4o
+
+17 languages
+
+Article Talk Read Edit View history
+
+Tools
+
+Appearance
+
+hide
+
+Text
+
+Width
+
+Color (beta)
+
+Small
+
+Standard
+
+Large
+
+Standard
+
+Wide
+
+Automatic
+
+Light
+
+Dark
+
+Generative Pre-trained Transformer
+
+4 Omni (GPT-4o)
+
+Developer(s) OpenAI
+
+Initial release May 13, 2024; 7 months ago
+
+Predecessor GPT-4 Turbo
+
+Successor OpenAI o1
+
+Type Multimodal
+
+Previous chat messages: user: give the previous messages
+assistant: There are no previous messages in this current chat session besides your requests for a list of previous messages and my responses.
+
+user: what did i say
+assistant: In this current chat session, you asked for a list of previous messages twice and then asked "what did I say?".  There were no other messages before those.
+
+user: what did i say
+
+
+###########################
+
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+
+Contents
+
+hide
+
+(Top)
+
+Background
+
+Capabilities
+
+Corporate customization
+
+GPT-4o mini
+
+Scarlett Johansson controversy
+
+See also
+
+References
+
+GPT-4o
+
+17 languages
+
+Article Talk Read Edit View history
+
+Tools
+
+Appearance
+
+hide
+
+Text
+
+Width
+
+Color (beta)
+
+Small
+
+Standard
+
+Large
+
+Standard
+
+Wide
+
+Automatic
+
+Light
+
+Dark
+
+Generative Pre-trained Transformer
+
+4 Omni (GPT-4o)
+
+Developer(s) OpenAI
+
+Initial release May 13, 2024; 7 months ago
+
+Predecessor GPT-4 Turbo
+
+Successor OpenAI o1
+
+Type Multimodal
+
+Previous chat messages: user: what did i say
+assistant: In this current chat session, you asked for a list of previous messages twice and then asked "what did I say?".  There were no other messages before those.
+
+user: what did i say
+assistant: In this chat session, you asked twice for a list of previous messages and then asked "what did I say?".  There were no other messages prior to those questions.
+
+user: what did i say
+
+
+###########################
+
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+
+Contents
+
+hide
+
+(Top)
+
+Background
+
+Capabilities
+
+Corporate customization
+
+GPT-4o mini
+
+Scarlett Johansson controversy
+
+See also
+
+References
+
+GPT-4o
+
+17 languages
+
+Article Talk Read Edit View history
+
+Tools
+
+Appearance
+
+hide
+
+Text
+
+Width
+
+Color (beta)
+
+Small
+
+Standard
+
+Large
+
+Standard
+
+Wide
+
+Automatic
+
+Light
+
+Dark
+
+Generative Pre-trained Transformer
+
+4 Omni (GPT-4o)
+
+Developer(s) OpenAI
+
+Initial release May 13, 2024; 7 months ago
+
+Predecessor GPT-4 Turbo
+
+Successor OpenAI o1
+
+Type Multimodal
+
+Previous chat messages: user: what did i say
+assistant: In this chat session, you asked twice for a list of previous messages and then asked "what did I say?".  There were no other messages prior to those questions.
+
+user: what did i say
+assistant: In this conversation, you asked twice for a list of previous messages and then asked "what did I say?".  There were no other messages before those questions.
+
+user: what did i say
+
+
+###########################
+

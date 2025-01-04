@@ -31,7 +31,12 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
                 if doc not in state["context"]:
                     state["context"].append(doc)
 
-        prompt = self._template_qa_pairs.invoke({"question": state["question"], "context": context_qa})
+        context = context_qa
+        if "chat_history" in state:
+            context += "\n\nPrevious chat messages: " + "\n".join([item["role"] + ": " + item["content"] for item in state["chat_history"]])
+        prompt = self.prompt.invoke({"question": state["question"], "context": context})
+
+        prompt += self._template_qa_pairs.invoke({"question": state["question"], "context": context})
         response = self.llm.invoke(prompt)
         return {"answer": response.content}
     
