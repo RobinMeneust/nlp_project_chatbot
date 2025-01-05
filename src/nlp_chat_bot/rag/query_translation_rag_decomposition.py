@@ -5,8 +5,8 @@ from nlp_chat_bot.rag.abstract_rag import AbstractRAG
 from nlp_chat_bot.rag.abstract_rag import State
 
 class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
-    def __init__(self, dataset_path, embedding_function, vector_store_path, llm, splitter=None, late_chunking=False, update_docs=True):
-        super().__init__(dataset_path, embedding_function, vector_store_path, llm, splitter, late_chunking, update_docs)
+    def __init__(self, dataset_path, embedding_function, vector_store_path, llm, splitter=None, late_chunking=False, update_docs=True, document_loader=None):
+        super().__init__(dataset_path, embedding_function, vector_store_path, llm, splitter, late_chunking, update_docs, document_loader)
         template = "Here is a set of Q+A pairs:\n\n{context}\n\nUse these to synthesize an answer to the question: {question}\n"
         self._template_qa_pairs = ChatPromptTemplate.from_template(template)
         self._compile()

@@ -10,8 +10,11 @@ from nlp_chat_bot.doc_loader.document_loader import DocumentLoader
 
 
 class ChromaVectorStoreBuilder:
-    def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, is_late_chunking=False):
-        self._document_loader = DocumentLoader()
+    def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, is_late_chunking=False, document_loader=None):
+        if document_loader is None:
+            self._document_loader = DocumentLoader()
+        else:
+            self._document_loader = document_loader
         self._is_late_chunking = is_late_chunking
         self._embedding_function = embedding_function
         self._vector_store_path = vector_store_path
