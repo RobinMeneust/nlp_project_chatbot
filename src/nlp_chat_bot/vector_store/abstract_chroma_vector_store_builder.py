@@ -44,6 +44,7 @@ class AbstractChromaVectorStoreBuilder(ABC):
             docs = self._splitter.split_documents(docs)
 
         self._load_docs(collection, docs)
+        print("Documents are now loaded")
 
         return Chroma(client=chroma_client, collection_name=self._collection_name, embedding_function=self._embedding_function)
 

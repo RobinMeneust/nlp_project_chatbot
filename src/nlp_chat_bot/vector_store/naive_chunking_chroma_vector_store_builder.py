@@ -9,6 +9,10 @@ class NaiveChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
 
     def _filter_existing_docs(self, collection, docs):
         existing_ids = set(collection.get()["ids"])
+
+        if len(existing_ids) == 0:
+            return docs
+
         ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, doc.page_content)) for doc in docs]
 
         filtered_docs = []

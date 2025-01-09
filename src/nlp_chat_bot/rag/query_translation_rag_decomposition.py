@@ -11,18 +11,26 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
         self._compile()
 
     def retrieve(self, state: State, k: int = 3):
-        docs_per_question = self._retrieve_docs_multiple_questions(state["question"], k)
-        return {"context": docs_per_question}
+        try:
+            docs_per_question = self._retrieve_docs_multiple_questions(state["question"], k)
+            return {"context": docs_per_question}
+
+        except Exception as e:
+            print("Error in retrieving documents: ", e)
+            return {"context": {}}
 
     def generate(self, state: State):
         docs_per_question = state["context"]
 
         context_qa = ""
-        for question, docs in docs_per_question.items():
-            docs_content = "\n\n".join(doc.page_content for doc in docs)
-            prompt = self.prompt.invoke({"question": question, "context": docs_content})
-            response = self.llm.invoke(prompt)
-            context_qa += f"Q: {question}\nA: {response.content}\n\n"
+        if "context" in state and len(docs_per_question) > 0:
+            for question, docs in docs_per_question.items():
+                if len(docs) == 0:
+                    continue
+                docs_content = "\n\n".join(doc.page_content for doc in docs)
+                prompt = self.prompt.invoke({"question": question, "context": docs_content})
+                response = self.llm.invoke(prompt)
+                context_qa += f"Q: {question}\nA: {response.content}\n\n"
 
         state["context"] = []
         for docs in docs_per_question.values():

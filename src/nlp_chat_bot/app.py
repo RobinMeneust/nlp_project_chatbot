@@ -1,3 +1,4 @@
+import chromadb
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 
@@ -8,7 +9,8 @@ from dotenv import load_dotenv
 
 from nlp_chat_bot.rag.query_translation_rag_decomposition import QueryTranslationRAGDecomposition
 from nlp_chat_bot.rag.query_translation_rag_fusion import QueryTranslationRAGFusion
-from nlp_chat_bot.vector_store.naive_chunking_chroma_vector_store_builder import ChromaVectorStoreBuilder
+from nlp_chat_bot.vector_store.naive_chunking_chroma_vector_store_builder import NaiveChunkingChromaVectorStoreBuilder
+from nlp_chat_bot.vector_store.late_chunking_chroma_vector_store_builder import LateChunkingChromaVectorStoreBuilder
 
 
 class ChatBotApp:
@@ -28,6 +30,7 @@ class ChatBotApp:
 
     def _init_rag(self):
         print("Initializing RAG...")
+        chromadb.api.client.SharedSystemClient.clear_system_cache()
         # get current file parent
         root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         model_download_path = os.path.join(root_path, "models")
@@ -35,18 +38,27 @@ class ChatBotApp:
         vector_store_path = os.path.join(root_path, "chromadb")
 
         load_dotenv()
-        embedding_function = LateChunkingEmbedding(model_download_path)
-        # embedding_function = MiniLM(model_download_path)
+
         splitter = None
         document_loader = None
-        vector_store = ChromaVectorStoreBuilder(dataset_path,
-                                                embedding_function,
-                                                vector_store_path,
-                                                splitter,
-                                                self._is_late_chunking,
-                                                document_loader).build(self._update_docs)
+
+        if self._is_late_chunking:
+            embedding_function = LateChunkingEmbedding(model_download_path)
+            vector_store = LateChunkingChromaVectorStoreBuilder(dataset_path,
+                                                                embedding_function,
+                                                                vector_store_path,
+                                                                splitter,
+                                                                document_loader).build(self._update_docs)
+        else:
+            embedding_function = MiniLM(model_download_path)
+            vector_store = NaiveChunkingChromaVectorStoreBuilder(dataset_path,
+                                                                embedding_function,
+                                                                vector_store_path,
+                                                                splitter,
+                                                                document_loader).build(self._update_docs)
 
         llm_gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+
         return self._rag_model_class(
             vector_store=vector_store,
             llm=llm_gemini,
@@ -60,3 +72,6 @@ class ChatBotApp:
             query["chat_history"] = chat_history[-self.history_max_length:]
             return self._rag.invoke(query=query)
         return self._rag.invoke(query=query)
+
+    def clear_documents(self):
+        self._rag.reset_db()

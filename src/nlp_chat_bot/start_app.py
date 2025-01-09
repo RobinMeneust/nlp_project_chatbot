@@ -37,6 +37,10 @@ def update_docs():
             update_docs=True
         )
 
+def clear_docs():
+    with st.spinner('Clearing documents...'):
+        st.session_state.app.clear_documents()
+
 # Options
 with st.sidebar:
     st.header("Settings")
@@ -60,6 +64,11 @@ with st.sidebar:
     st.subheader("Update documents from data folder")
     st.button("Update docs", on_click=update_docs)
     st.write("Note: Documents are stored for the current embeddings function settings. If it changes you need to re-update it so that the vector database for the new embedding function is updated.")
+    st.divider()
+
+    st.subheader("Clear documents storage")
+    st.button("Clear documents", on_click=clear_docs)
+    st.write("WARNING: All documents will have to be re-loaded")
     st.divider()
 
 # Initialize chat history

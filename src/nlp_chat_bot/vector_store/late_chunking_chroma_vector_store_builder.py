@@ -17,18 +17,22 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
 
     def _filter_existing_docs(self, collection, docs, chunks):
         existing_ids = set(collection.get()["ids"])
+
+        if len(existing_ids) == 0:
+            return docs, chunks
+
         filtered_docs = []
         filtered_chunks = []
         for i in tqdm(range(len(docs)), desc="Filtering existing documents"):
             ids = [str(uuid.uuid5(uuid.NAMESPACE_DNS, d.page_content)) for d in chunks[i]]
-            is_not_duplicate = False
+            is_duplicate = True
             for c_id in ids:
                 # if at least one chunk is not in the collection, then the whole document is considered as not in the collection
-                if c_id in existing_ids:
-                    is_not_duplicate = True
+                if c_id not in existing_ids:
+                    is_duplicate = False
                     break
 
-            if is_not_duplicate:
+            if not is_duplicate:
                 filtered_docs.append(docs[i])
                 filtered_chunks.append(chunks[i])
 
@@ -83,14 +87,12 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
         splitter_max_tokens = self._embedding_function.get_splitter_max_tokens()
         docs = splitter_max_tokens.split_documents(docs)
 
-        start = time.time()
         splitter = self._embedding_function.get_splitter()
         chunks = [splitter.split_documents([doc]) for doc in docs]
         docs, chunks = self._filter_existing_docs(collection, docs, chunks)
-        print(f"Filtering existing documents took {time.time() - start} seconds")
 
         i = 0
-        desc = f"Storing documents embeddings (batch size is {self._batch_size})" if self._batch_size > 1 else "Storing documents embeddings"
+        desc = f"Storing {len(docs)} documents embeddings (batch size is {self._batch_size})" if self._batch_size > 1 else f"Storing {len(docs)} documents embeddings"
         with tqdm(total=len(docs), desc=desc) as pbar:
             while i < len(docs):
                 batch_docs = docs[i:i + self._batch_size]
