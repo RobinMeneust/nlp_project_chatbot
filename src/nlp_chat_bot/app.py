@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from nlp_chat_bot.rag.query_translation_rag_decomposition import QueryTranslationRAGDecomposition
 from nlp_chat_bot.rag.query_translation_rag_fusion import QueryTranslationRAGFusion
+from nlp_chat_bot.vector_store.chroma_vector_store_builder import ChromaVectorStoreBuilder
 
 
 class ChatBotApp:
@@ -34,17 +35,21 @@ class ChatBotApp:
         vector_store_path = os.path.join(root_path, "chromadb")
 
         load_dotenv()
-
         embedding_function = LateChunkingEmbedding(model_download_path)
         # embedding_function = MiniLM(model_download_path)
+        splitter = None
+        document_loader = None
+        vector_store = ChromaVectorStoreBuilder(dataset_path,
+                                                embedding_function,
+                                                vector_store_path,
+                                                splitter,
+                                                self._is_late_chunking,
+                                                document_loader).build(self._update_docs)
+
         llm_gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
         return self._rag_model_class(
-            dataset_path,
-            embedding_function,
-            vector_store_path,
-            late_chunking=self._is_late_chunking,
+            vector_store=vector_store,
             llm=llm_gemini,
-            update_docs=self._update_docs
         )
 
     def get_name(self):

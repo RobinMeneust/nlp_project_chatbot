@@ -4,8 +4,8 @@ from nlp_chat_bot.rag.abstract_rag import AbstractRAG
 from langchain.prompts import ChatPromptTemplate
 
 class AbstractQueryTranslationRAG(AbstractRAG, ABC):
-    def __init__(self, dataset_path, embedding_function, vector_store_path, llm, splitter=None, late_chunking=False, update_docs=True, document_loader=None):
-        super().__init__(dataset_path, embedding_function, vector_store_path, splitter, llm, late_chunking, update_docs, document_loader)
+    def __init__(self, vector_store, llm=None):
+        super().__init__(vector_store, llm)
         template = """You are an AI language model assistant. Your task is to generate three 
         different versions of the given user question to retrieve relevant documents from a vector 
         database. By generating multiple perspectives on the user question, your goal is to help

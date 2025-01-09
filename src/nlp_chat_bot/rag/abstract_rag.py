@@ -1,14 +1,9 @@
 from abc import ABC, abstractmethod
 
-from langchain_core.prompts import ChatPromptTemplate
-
-from nlp_chat_bot.doc_loader.document_loader import DocumentLoader
 from typing_extensions import List, TypedDict
 from langchain_core.documents import Document
 from langchain import hub
 from langgraph.graph import START, StateGraph
-
-from nlp_chat_bot.vector_store.chroma_vector_store_builder import ChromaVectorStoreBuilder
 
 
 class State(TypedDict):
@@ -18,15 +13,12 @@ class State(TypedDict):
     chat_history: List[str]
 
 class AbstractRAG(ABC):
-    def __init__(self, dataset_path, embedding_function, vector_store_path, splitter=None, llm=None, late_chunking=False, update_docs=True, document_loader=None):
+    def __init__(self, vector_store, llm=None):
         if llm is None:
             print("WARNING: No LLM model provided. Only retrieval can be performed.")
-        self._is_late_chunking = late_chunking
-        self.document_loader = DocumentLoader()
-        self.splitter = splitter
         self.prompt = hub.pull("rlm/rag-prompt")
         self.llm = llm
-        self._vector_store = ChromaVectorStoreBuilder(dataset_path, embedding_function, vector_store_path, splitter, late_chunking, document_loader).build(update_docs)
+        self._vector_store = vector_store
         self._graph = None
 
 

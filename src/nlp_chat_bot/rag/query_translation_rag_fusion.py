@@ -1,10 +1,9 @@
 from nlp_chat_bot.rag.abstract_query_translation_rag import AbstractQueryTranslationRAG
-from nlp_chat_bot.rag.abstract_rag import AbstractRAG
 from nlp_chat_bot.rag.abstract_rag import State
 
 class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
-    def __init__(self, dataset_path, embedding_function, vector_store_path, llm, splitter=None, late_chunking=False, update_docs=True, document_loader=None):
-        super().__init__(dataset_path, embedding_function, vector_store_path, llm, splitter, late_chunking, update_docs, document_loader)
+    def __init__(self, vector_store, llm=None):
+        super().__init__(vector_store, llm)
         self._compile()
 
     def retrieve(self, state: State, k: int = 3):
