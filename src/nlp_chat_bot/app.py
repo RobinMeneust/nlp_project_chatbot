@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from nlp_chat_bot.rag.query_translation_rag_decomposition import QueryTranslationRAGDecomposition
 from nlp_chat_bot.rag.query_translation_rag_fusion import QueryTranslationRAGFusion
-from nlp_chat_bot.vector_store.chroma_vector_store_builder import ChromaVectorStoreBuilder
+from nlp_chat_bot.vector_store.naive_chunking_chroma_vector_store_builder import ChromaVectorStoreBuilder
 
 
 class ChatBotApp:

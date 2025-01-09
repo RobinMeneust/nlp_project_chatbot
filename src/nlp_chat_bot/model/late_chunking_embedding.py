@@ -123,20 +123,3 @@ class LateChunkingEmbedding:
 
     def get_id(self):
         return "late_chunking_embedding"
-
-# import os
-# from langchain_text_splitters import RecursiveCharacterTextSplitter
-# if __name__ == "__main__":
-#     current_file_path = os.path.abspath(__file__)
-#
-#     model_download_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))) + "/models"
-#     splitter = RecursiveCharacterTextSplitter(
-#         chunk_size=100,  # chunk size (characters)
-#         chunk_overlap=10,  # chunk overlap (characters)
-#         add_start_index=True,  # track index in original document
-#     )
-#     embedding_function = LateChunkingEmbedding(model_download_path, splitter)
-#     docs = ["This is a test document. It has two sentences. The second sentence is this one."]
-#     print(len(embedding_function.embed_documents(docs)[0]), ":", embedding_function.embed_documents(docs))
-#     print(len(embedding_function.embed_query("What is the acronym AIA?")), ":", embedding_function.embed_query("What is the acronym AIA?"))
-#     print("Done")
