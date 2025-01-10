@@ -17,3 +17,4 @@ langchain-google-genai
 streamlit
 python-dotenv
 datasets
+llama-cpp-python

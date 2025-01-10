@@ -2,9 +2,9 @@ import chromadb
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 
-from nlp_chat_bot.model.minilm import MiniLM
+from nlp_chat_bot.model.embedding.minilm import MiniLM
 from nlp_chat_bot.rag.classic_rag import ClassicRAG
-from nlp_chat_bot.model.late_chunking_embedding import LateChunkingEmbedding
+from nlp_chat_bot.model.embedding.late_chunking_embedding import LateChunkingEmbedding
 from dotenv import load_dotenv
 
 from nlp_chat_bot.rag.query_translation_rag_decomposition import QueryTranslationRAGDecomposition

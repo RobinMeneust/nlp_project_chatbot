@@ -7,6 +7,23 @@
 
 Check install (first activate the environment): `python -c "import torch;print(torch.cuda.is_available())"`
 
+### Issues with LlamaCpp
+
+If you didn't use the environment file, or if you are on Windows, follow the following steps for LlamaCpp (used to load local LLMs models):
+`CMAKE_ARGS=-DGGML_CUDA=on; FORCE_CMAKE=1; pip install -r requirements.txt`
+
+On Windows, try [this](https://python.langchain.com/docs/integrations/llms/llamacpp/) and [this](https://pypi.org/project/llama-cpp-python/) (check pre-built wheel, e.g. `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/124`)
+If ou still have issues, try also [this](https://www.reddit.com/r/LocalLLaMA/comments/14jq3ih/lamacpppython_with_gpu_acceleration_on_windows/) : install cl.exe from Visual Studio Build Tools, and add the path to the PATH environment variable. And add the following variables :
+```
+LLAMA_CUBLAS = "1"
+FORCE_CMAKE = "1"
+CMAKE_ARGS="-DLLAMA_CUBLAS=on" 
+CMAKE_ARGS="-DGGML_CUDA=on"
+```
+and run `pip install llama-cpp-python --upgrade --force-reinstall --no-cache-dir`
+
+## API keys (e.g. Gemini)
+
 Create a `.env` file in the root directory with the following content:
 
 ```

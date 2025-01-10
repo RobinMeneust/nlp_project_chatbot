@@ -4,3 +4,6 @@ dependencies:
   - pip
   - pip:
     - -r requirements.txt
+variables:
+  CMAKE_ARGS: "-DGGML_CUDA=on"
+  FORCE_CMAKE: "1"
