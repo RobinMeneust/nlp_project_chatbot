@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import time
 import uuid
 from gc import collect
@@ -13,7 +14,7 @@ from nlp_chat_bot.vector_store.abstract_chroma_vector_store_builder import Abstr
 
 class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
     def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, document_loader=None):
-        super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader, batch_size=1)
+        super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader, batch_size=10)
 
     def _filter_existing_docs(self, collection, docs, chunks):
         existing_ids = set(collection.get()["ids"])
@@ -73,7 +74,7 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
                     chunks_contents.append(chunks[i][j].page_content)
                     chunks_metadatas.append(chunks[i][j].metadata)
 
-        chunks_embeddings = self._embedding_function.embed_documents(docs_contents)
+        chunks_embeddings = self._embedding_function.embed_documents(docs_contents, chunks)
 
         collection.upsert(
             documents=chunks_contents,
@@ -82,13 +83,16 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
             metadatas=chunks_metadatas
         )
 
+    def get_chunks(self, docs):
+        splitter = self._embedding_function.get_splitter()
+        return [splitter.split_documents([doc]) for doc in docs]
+
     def _load_docs(self, collection, docs):
         # 1st split so that the model can handle the input
         splitter_max_tokens = self._embedding_function.get_splitter_max_tokens()
         docs = splitter_max_tokens.split_documents(docs)
 
-        splitter = self._embedding_function.get_splitter()
-        chunks = [splitter.split_documents([doc]) for doc in docs]
+        chunks = self.get_chunks(docs)
         docs, chunks = self._filter_existing_docs(collection, docs, chunks)
 
         i = 0

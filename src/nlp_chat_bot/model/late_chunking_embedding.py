@@ -1,5 +1,6 @@
 import gc
 
+import numpy as np
 from langchain_text_splitters import CharacterTextSplitter
 from tqdm import tqdm
 from transformers import AutoModel
@@ -27,11 +28,14 @@ class LateChunkingEmbedding:
         return self._splitter_max_tokens
 
     # based on https://github.com/jina-ai/late-chunking
-    def _chunk(self, doc):
+    def _chunk(self, doc, chunk_texts=None):
         tokens = self._tokenizer(doc, return_tensors="pt", return_offsets_mapping = True, truncation=True, max_length=self._max_tokens, padding="max_length")
         offsets = tokens['offset_mapping'][0]
 
-        texts = self._splitter.split_text(doc)
+        if chunk_texts is not None:
+            texts = chunk_texts
+        else:
+            texts = self._splitter.split_text(doc)
 
         end_char_indices = [len(texts[0])]
         for i in range(1, len(texts)):
@@ -49,29 +53,6 @@ class LateChunkingEmbedding:
             if chunk_index == len(end_char_indices):
                 break
 
-
-
-        # list of tuples (chunk_id, start_position)
-        # List of (token index, token pos in text + 1) where token is a punctuation mark
-        # chunks_pos = []
-        # for i in range(len(offsets)):
-        #     token_id = token_ids[i]
-        #     start = offsets[i][0]
-        #
-        #     if token_id in end_of_sentence_tokens and token_ids[i] != token_ids[i + 1]:
-        #         # if it's the last token, or it's an end of sentence token and the next one is not one (to avoid "..." case)
-        #         chunks_pos.append((i, int(start + 1)))
-
-        # print(offsets)
-        # print(chunks_pos)
-        chunks = []
-
-        # print(chunks_pos)
-
-        # Chunks (text)
-        for i in range(len(chunks_pos)-1):
-            chunks.append(doc[chunks_pos[i][1]:chunks_pos[i+1][1]])
-
         # print(chunks)
         span_annotations = []
 
@@ -82,39 +63,43 @@ class LateChunkingEmbedding:
         # print(span_annotations)
         del tokens['offset_mapping']
 
-        return tokens, chunks, span_annotations
+        return tokens, span_annotations
 
     def _late_chunking(self, tokens_embeddings, span_annotations):
         # https://colab.research.google.com/drive/15vNZb6AsU7byjYoaEtXuNu567JWNzXOz?usp=sharing
         chunks_embeddings = []
         for embeddings, annotations in zip(tokens_embeddings, span_annotations):
+            # Compute pooled embeddings for each span
             pooled_embeddings = [
-                embeddings[start:end].sum(dim=0) / (end - start)
+                embeddings[start:end].mean(dim=0).detach().cpu().numpy()
                 for start, end in annotations
                 if (end - start) >= 1
-            ]
-            pooled_embeddings = [
-                embedding.detach().cpu().numpy() for embedding in pooled_embeddings
             ]
             chunks_embeddings.append(pooled_embeddings)
 
         return chunks_embeddings
 
-    def embed_documents(self, docs):
+
+    def embed_documents(self, docs, chunks=None):
         docs_embeddings = []
-        for d in docs:
-            inputs, _, span_annotations = self._chunk(d)
-            inputs.to(self._device)
-            # print(len(d), len(inputs['input_ids'][0]),"\n")
+
+        for i in range(len(docs)):
+            doc = docs[i]
+            if chunks is None:
+                chunk_texts = None
+            else:
+                chunk_texts = [c.page_content for c in chunks[i]]
+            inputs, span_annotations = self._chunk(doc, chunk_texts)
+            # inputs = inputs.to(self._device)
+            for k, v in inputs.items():
+                inputs[k] = v.pin_memory().to(self._device, non_blocking=True)
             outputs = self._model(**inputs)
             embeddings = self._late_chunking(outputs[0], [span_annotations])[0]
             docs_embeddings += embeddings
 
-            # print(f"embeddings in late_chunking_embedding.py: {len(docs_embeddings)} (+{len(embeddings)})")
-
             del inputs, outputs, embeddings, span_annotations
-            torch.cuda.empty_cache()
-            gc.collect()
+            # torch.cuda.empty_cache()
+            # gc.collect()
 
         return docs_embeddings
 
@@ -122,4 +107,4 @@ class LateChunkingEmbedding:
         return self._model.encode(query)
 
     def get_id(self):
-        return "late_chunking_embedding"
+        return "late_chunking_embedding_jinaai"

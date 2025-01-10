@@ -167,3 +167,4 @@ chromadb
 data/
 test_datasets
 test_chromadb
+profiler_results

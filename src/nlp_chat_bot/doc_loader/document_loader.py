@@ -1,8 +1,8 @@
-from langchain.document_loaders import CSVLoader
-from langchain.document_loaders import DirectoryLoader
-from langchain.document_loaders import UnstructuredHTMLLoader
+from langchain_community.document_loaders import CSVLoader
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import UnstructuredHTMLLoader
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 
 
 class DocumentLoader():      
