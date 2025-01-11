@@ -1,7 +1,7 @@
 import gc
 
 import numpy as np
-from langchain_text_splitters import CharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from tqdm import tqdm
 from transformers import AutoModel
 from transformers import AutoTokenizer
@@ -14,8 +14,8 @@ class LateChunkingEmbedding:
         self._model.to(device)
         self._device = device
         self._max_tokens = 8192
-        self._splitter_max_tokens = CharacterTextSplitter.from_huggingface_tokenizer(
-            self._tokenizer, chunk_size=self._max_tokens, chunk_overlap=0
+        self._splitter_max_tokens = RecursiveCharacterTextSplitter(
+            chunk_size = self._max_tokens*3, chunk_overlap=0 # token split didn't work so we use character split
         )
 
     def get_splitter_max_tokens(self):
@@ -23,36 +23,69 @@ class LateChunkingEmbedding:
 
     # based on https://github.com/jina-ai/late-chunking
     def _chunk(self, doc, chunk_texts):
-        tokens = self._tokenizer(doc, return_tensors="pt", return_offsets_mapping = True, truncation=True, max_length=self._max_tokens, padding="max_length")
-        offsets = tokens['offset_mapping'][0]
-
+        tokens = self._tokenizer(doc, return_tensors="pt", return_offsets_mapping = True)
+        if len(tokens['input_ids'][0]) > self._max_tokens:
+            raise Exception(f"Document is too long: {len(tokens['input_ids'][0])} tokens")
         end_char_indices = [len(chunk_texts[0])]
         for i in range(1, len(chunk_texts)):
-            end_char_indices.append(end_char_indices[-1] + len(chunk_texts[i]))
+            end_char_indices.append((end_char_indices[-1] + len(chunk_texts[i])))
+
+        offsets = tokens['offset_mapping'][0]
+
+
 
         span_annotations = []
 
         chunk_index = 0 # used for the stopping criterion
 
         # Start and end positions of the chunks (in tokens not characters)
-        start_idx = 1
-        end_idx = 1
-        while end_idx < len(offsets):
-            if offsets[end_idx][1] >= end_char_indices[chunk_index]:
-                span_annotations.append((start_idx, end_idx))
-                start_idx = end_idx
+        start_token_idx = 1
+        end_token_idx = 1
+
+        last_token_idx = len(offsets)-1
+
+        while chunk_index < len(end_char_indices):
+            # if chunk_index == len(end_char_indices) - 1:
+            #     print(f"current :{offsets[end_idx][1]}, target: {end_char_indices[chunk_index]}, max len: {len(offsets)}")
+
+            # if padding or end chunk character reached
+            if offsets[end_token_idx][1] >= end_char_indices[chunk_index]:
+                # print("chunk idx: ", chunk_index, "end_idx: ", end_idx, "end_char_indices[chunk_index]: ", end_char_indices[chunk_index], "len end_char_indices: ", len(end_char_indices), "offsets[end_idx][1]:", offsets[end_idx][1])
+                span_annotations.append((start_token_idx, end_token_idx))
+
+                if offsets[end_token_idx][1] == end_char_indices[chunk_index]:
+                    # If the end of the chunk is exactly at the end of the token
+                    end_token_idx = end_token_idx
+                else:
+                    # Otherwise we keep the previous token (because the end character is in the middle of the token)
+                    end_token_idx = end_token_idx - 1
+
+                start_token_idx = end_token_idx
+
                 chunk_index += 1
-
-            if chunk_index == len(end_char_indices):
+            elif end_token_idx == last_token_idx:
+                # If we reached the end of the tokens
+                span_annotations.append((start_token_idx, end_token_idx))
                 break
-            end_idx += 1
-
-        end_idx -= 1
-        if start_idx < end_idx:
-            span_annotations.append((start_idx, end_idx))
+            end_token_idx += 1
 
         # print(span_annotations)
         del tokens['offset_mapping']
+
+        if len(span_annotations) != len(chunk_texts):
+            exception_txt = f"""Number of chunks and span annotations do not match
+            \tNumber of tokens: {len(tokens['input_ids'][0])}
+            \tTotal number of characters in chunk_texts: {sum([len(txt) for txt in chunk_texts])}
+            \tNumber of characters in chunk_texts: {[len(txt) for txt in chunk_texts]}
+            \tLasts offsets values: {offsets[-2], offsets[-1]}
+            \tNumber of chunks: {len(chunk_texts)}
+            \tlength of end_char_indices: {len(end_char_indices)}
+            \tNumber of span annotations: {len(span_annotations)}
+            \tspan_annotations: {span_annotations}
+            \tend_char_indices: {end_char_indices}
+            \tlen offsets: {len([offsets[i] for i in range(len(offsets)) if offsets[i][0] != 0 or i == 0])}
+            """
+            raise Exception(exception_txt)
 
         return tokens, span_annotations
 

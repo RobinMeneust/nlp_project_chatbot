@@ -14,9 +14,12 @@ from nlp_chat_bot.vector_store.abstract_chroma_vector_store_builder import Abstr
 
 class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
     def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, document_loader=None):
-        super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader, batch_size=10)
+        super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader, batch_size=100)
         if self._splitter is None:
             raise ValueError("Late chunking requires a splitter, because it's then equivalent to naive chunking so you should use NaiveChunkingChromaVectorStoreBuilder instead")
+
+        if splitter._chunk_overlap > 0:
+            raise ValueError("Late chunking requires a splitter with no overlap")
 
     def _filter_existing_docs(self, collection, docs, chunks):
         existing_ids = set(collection.get()["ids"])
@@ -78,7 +81,7 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
 
         chunks_embeddings = self._embedding_function.embed_documents(docs_contents, chunks)
 
-        print(f"Storing {sum([len(c) for c in chunks])} total chunks len, {len(chunks_contents)} chunks with {len(chunks_embeddings)} embeddings")
+        # print(f"Storing {sum([len(c) for c in chunks])} total chunks len, {len(chunks_contents)} chunks with {len(chunks_embeddings)} embeddings")
 
 
 
