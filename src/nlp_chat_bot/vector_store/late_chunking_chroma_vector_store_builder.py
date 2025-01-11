@@ -15,6 +15,8 @@ from nlp_chat_bot.vector_store.abstract_chroma_vector_store_builder import Abstr
 class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
     def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, document_loader=None):
         super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader, batch_size=10)
+        if self._splitter is None:
+            raise ValueError("Late chunking requires a splitter, because it's then equivalent to naive chunking so you should use NaiveChunkingChromaVectorStoreBuilder instead")
 
     def _filter_existing_docs(self, collection, docs, chunks):
         existing_ids = set(collection.get()["ids"])
@@ -76,6 +78,10 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
 
         chunks_embeddings = self._embedding_function.embed_documents(docs_contents, chunks)
 
+        print(f"Storing {sum([len(c) for c in chunks])} total chunks len, {len(chunks_contents)} chunks with {len(chunks_embeddings)} embeddings")
+
+
+
         collection.upsert(
             documents=chunks_contents,
             embeddings=chunks_embeddings,
@@ -83,30 +89,28 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
             metadatas=chunks_metadatas
         )
 
-    def get_chunks(self, docs):
-        splitter = self._embedding_function.get_splitter()
-        return [splitter.split_documents([doc]) for doc in docs]
 
     def _load_docs(self, collection, docs):
         # 1st split so that the model can handle the input
         splitter_max_tokens = self._embedding_function.get_splitter_max_tokens()
         docs = splitter_max_tokens.split_documents(docs)
 
-        chunks = self.get_chunks(docs)
+        # 2nd split (considering late chunking)
+        chunks = [self._splitter.split_documents([doc]) for doc in docs]
         docs, chunks = self._filter_existing_docs(collection, docs, chunks)
 
         i = 0
         desc = f"Storing {len(docs)} documents embeddings (batch size is {self._batch_size})" if self._batch_size > 1 else f"Storing {len(docs)} documents embeddings"
         with tqdm(total=len(docs), desc=desc) as pbar:
             while i < len(docs):
-                batch_docs = docs[i:i + self._batch_size]
+                end_index = i + self._batch_size
+                batch_docs = docs[i:end_index]
                 if len(batch_docs) == 0:
                     continue
 
-                # 2nd split (late chunking)
-                self._add_unique_to_collection(collection, batch_docs, chunks[i:])
+                self._add_unique_to_collection(collection, batch_docs, chunks[i:end_index])
 
-                i += self._batch_size
+                i = end_index
                 pbar.update(self._batch_size)
 
             if i < len(docs):

@@ -8,57 +8,48 @@ from transformers import AutoTokenizer
 import torch
 
 class LateChunkingEmbedding:
-    def __init__(self, model_download_path, chunk_size=100, chunk_overlap=0, device=torch.device('cuda')):
+    def __init__(self, model_download_path, device=torch.device('cuda')):
         self._model = AutoModel.from_pretrained("jinaai/jina-embeddings-v2-small-en", cache_dir=model_download_path, trust_remote_code=True)
         self._tokenizer = AutoTokenizer.from_pretrained("jinaai/jina-embeddings-v2-small-en", cache_dir=model_download_path, trust_remote_code=True)
         self._model.to(device)
         self._device = device
         self._max_tokens = 8192
-        self._splitter = CharacterTextSplitter.from_huggingface_tokenizer(
-            self._tokenizer, chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
         self._splitter_max_tokens = CharacterTextSplitter.from_huggingface_tokenizer(
             self._tokenizer, chunk_size=self._max_tokens, chunk_overlap=0
         )
-
-    def get_splitter(self):
-        return self._splitter
 
     def get_splitter_max_tokens(self):
         return self._splitter_max_tokens
 
     # based on https://github.com/jina-ai/late-chunking
-    def _chunk(self, doc, chunk_texts=None):
+    def _chunk(self, doc, chunk_texts):
         tokens = self._tokenizer(doc, return_tensors="pt", return_offsets_mapping = True, truncation=True, max_length=self._max_tokens, padding="max_length")
         offsets = tokens['offset_mapping'][0]
 
-        if chunk_texts is not None:
-            texts = chunk_texts
-        else:
-            texts = self._splitter.split_text(doc)
+        end_char_indices = [len(chunk_texts[0])]
+        for i in range(1, len(chunk_texts)):
+            end_char_indices.append(end_char_indices[-1] + len(chunk_texts[i]))
 
-        end_char_indices = [len(texts[0])]
-        for i in range(1, len(texts)):
-            end_char_indices.append(end_char_indices[-1] + len(texts[i]))
-
-        chunks_pos = [(1,0)]
-        chunk_index = 0
-        for i in range(1, len(offsets)):
-            if offsets[i][1] >= end_char_indices[chunk_index]:
-                if i < len(offsets) - 1:
-                    chunks_pos.append((i, int(offsets[i+1][0])))
-                else:
-                    chunks_pos.append((i, len(offsets)-1))
-                chunk_index += 1
-            if chunk_index == len(end_char_indices):
-                break
-
-        # print(chunks)
         span_annotations = []
 
+        chunk_index = 0 # used for the stopping criterion
+
         # Start and end positions of the chunks (in tokens not characters)
-        for i in range(len(chunks_pos)-1):
-            span_annotations.append((chunks_pos[i][0], chunks_pos[i+1][0]))
+        start_idx = 1
+        end_idx = 1
+        while end_idx < len(offsets):
+            if offsets[end_idx][1] >= end_char_indices[chunk_index]:
+                span_annotations.append((start_idx, end_idx))
+                start_idx = end_idx
+                chunk_index += 1
+
+            if chunk_index == len(end_char_indices):
+                break
+            end_idx += 1
+
+        end_idx -= 1
+        if start_idx < end_idx:
+            span_annotations.append((start_idx, end_idx))
 
         # print(span_annotations)
         del tokens['offset_mapping']
@@ -80,15 +71,12 @@ class LateChunkingEmbedding:
         return chunks_embeddings
 
 
-    def embed_documents(self, docs, chunks=None):
+    def embed_documents(self, docs, chunks):
         docs_embeddings = []
 
         for i in range(len(docs)):
             doc = docs[i]
-            if chunks is None:
-                chunk_texts = None
-            else:
-                chunk_texts = [c.page_content for c in chunks[i]]
+            chunk_texts = [c.page_content for c in chunks[i]]
             inputs, span_annotations = self._chunk(doc, chunk_texts)
             # inputs = inputs.to(self._device)
             for k, v in inputs.items():

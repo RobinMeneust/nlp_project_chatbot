@@ -53,6 +53,8 @@ class NaiveChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
        )
 
     def _load_docs(self, collection, docs):
+        if self._splitter is not None:
+            docs = self._splitter.split_documents(docs)
         docs = self._filter_existing_docs(collection, docs)
 
         i = 0

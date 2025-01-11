@@ -47,10 +47,6 @@ class AbstractChromaVectorStoreBuilder(ABC):
 
         collection = chroma_client.get_or_create_collection(name=self._collection_name)
 
-
-        if self._splitter is not None:
-            docs = self._splitter.split_documents(docs)
-
         self._load_docs(collection, docs)
         print("Documents are now loaded")
 
