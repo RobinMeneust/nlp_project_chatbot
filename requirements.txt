@@ -18,3 +18,4 @@ streamlit
 python-dotenv
 datasets
 llama-cpp-python
+matplotlib
