@@ -18,7 +18,7 @@ class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
 
             return {"context": docs}
 
-        except Exception as e:
+        except Exception:
             return {"context": []}
 
     def generate(self, state: State):
