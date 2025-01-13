@@ -7,6 +7,7 @@ class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
         self._compile()
 
     def retrieve(self, state: State, k: int = 3):
+        print("retrieving documents (Fusion)")
         try:
             docs_per_question = self._retrieve_docs_multiple_questions(state["question"], k)
             docs = []
@@ -23,6 +24,7 @@ class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
             return {"context": []}
 
     def generate(self, state: State):
+        print("generating response (Fusion)")
         if "context" in state and len(state["context"]) > 0:
             docs_content = "\n\n".join(doc.page_content for doc in state["context"])
             context = docs_content

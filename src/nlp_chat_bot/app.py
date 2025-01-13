@@ -2,7 +2,11 @@ import chromadb
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from nlp_chat_bot.model.embedding.minilm import MiniLM
+from nlp_chat_bot.model.llm.gemma import Gemma
+from nlp_chat_bot.model.llm.mistral import Mistral
 from nlp_chat_bot.rag.classic_rag import ClassicRAG
 from nlp_chat_bot.model.embedding.late_chunking_embedding import LateChunkingEmbedding
 from dotenv import load_dotenv
@@ -14,7 +18,8 @@ from nlp_chat_bot.vector_store.late_chunking_chroma_vector_store_builder import 
 
 
 class ChatBotApp:
-    def __init__(self, chatbot_name="chatbot_name", update_docs=False, rag_model="none", is_late_chunking=True):
+    def __init__(self, chatbot_name="My Assistant", update_docs=False, rag_mode="none", is_late_chunking=True, llm_model_name="gemini-1.5-flash"):
+        print(f"ChatBotApp(chatbot_name={chatbot_name}, update_docs={update_docs}, rag_mode={rag_mode}, is_late_chunking={is_late_chunking}, llm_model_name={llm_model_name})")
         rags_models = {
             "none": ClassicRAG,
             "decomposition": QueryTranslationRAGDecomposition,
@@ -22,9 +27,14 @@ class ChatBotApp:
         }
         self._chatbot_name = chatbot_name
         self._update_docs = update_docs
-        self._rag_model_class = rags_models[rag_model]
+
+        if rag_mode not in rags_models:
+            raise Exception(f"Unknown RAG mode: {rag_mode}")
+        self._rag_model_class = rags_models[rag_mode]
+
         self._is_late_chunking = is_late_chunking
         self.history_max_length = 5
+        self._llm_model_name = llm_model_name
 
         self._rag = self._init_rag()
 
@@ -39,7 +49,11 @@ class ChatBotApp:
 
         load_dotenv()
 
-        splitter = None
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,  # chunk size (characters)
+            chunk_overlap=0 # chunk overlap (characters)
+        )
+
         document_loader = None
 
         if self._is_late_chunking:
@@ -57,11 +71,19 @@ class ChatBotApp:
                                                                 splitter,
                                                                 document_loader).build(self._update_docs)
 
-        llm_gemini = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+
+        if self._llm_model_name == "gemini-1.5-flash":
+            llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+        elif self._llm_model_name == "gemma-2b":
+            llm = Gemma(model_download_path)
+        elif self._llm_model_name == "mistral-7b":
+            llm = Mistral(model_download_path)
+        else:
+            raise Exception(f"Unknown LLM model name: {self._llm_model_name}")
 
         return self._rag_model_class(
             vector_store=vector_store,
-            llm=llm_gemini,
+            llm=llm,
         )
 
     def get_name(self):

@@ -11,6 +11,7 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
         self._compile()
 
     def retrieve(self, state: State, k: int = 3):
+        print("retrieving documents (Decomposition)")
         try:
             docs_per_question = self._retrieve_docs_multiple_questions(state["question"], k)
             return {"context": docs_per_question}
@@ -20,6 +21,7 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
             return {"context": {}}
 
     def generate(self, state: State):
+        print("generating response (Decomposition)")
         docs_per_question = state["context"]
 
         context_qa = ""
@@ -41,9 +43,9 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
         context = context_qa
         if "chat_history" in state:
             context += "\n\nPrevious chat messages: " + "\n".join([item["role"] + ": " + item["content"] for item in state["chat_history"]])
-        prompt = self.prompt.invoke({"question": state["question"], "context": context})
+        prompt = str(self.prompt.invoke({"question": state["question"], "context": context}))
 
-        prompt += self._template_qa_pairs.invoke({"question": state["question"], "context": context})
+        prompt += str(self._template_qa_pairs.invoke({"question": state["question"], "context": context}))
         response = self.llm.invoke(prompt)
         return {"answer": response.content}
     

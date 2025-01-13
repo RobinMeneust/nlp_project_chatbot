@@ -14,14 +14,16 @@ class Gemma:
 
         self._llm = LlamaCpp(
             model_path=model_file,
-            # temperature=0.,
-            max_tokens=200,
-            top_p=1,
+            temperature=0.7,
+            n_ctx=0, # 0 means we use the model's value
+            max_tokens=300,
+            top_p=0.85,
             n_gpu_layers=-1,  # nombre de couches à chargers sur le GPU
-            verbose=False
+            verbose=True
         )
 
     def invoke(self, prompt):
+        print("########")
         return AIMessage(self._llm(prompt.messages[0].content))
 
 # if __name__ == "__main__":

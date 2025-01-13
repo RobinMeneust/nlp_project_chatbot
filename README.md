@@ -44,7 +44,3 @@ But we also used the first 1012 lines of [MPST: Movie Plot Synopses with Tags](h
 
 - If the app runs the same code multiple times even though you started it once : don't open multiple tabs of the app in the same browser, it will cause issues: (https://stackoverflow.com/questions/76474732/why-is-the-code-executed-multiple-times-whenever-streamlit-is-started)
 - If you get Process finished with exit code -1073741819 (0xC0000005) in PyCharm, consider running the app from the terminal instead (using the command above), it fixed it for us. Maybe checking "Run with Python Console" might also fix it.
-
-## Dev
-
-For the `profiler.py` script, install gprof2dot using `pip install gprof2dot`. Other requirements such as Graphviz or dot might be required

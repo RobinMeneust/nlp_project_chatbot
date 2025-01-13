@@ -14,12 +14,18 @@ class AbstractQueryTranslationRAG(AbstractRAG, ABC):
         self._prompt_perspectives = ChatPromptTemplate.from_template(template)
 
     def _retrieve_docs_multiple_questions(self, initial_question, k):
+        print("retrieving documents (Multiple Questions)")
         questions_gen_prompt = self._prompt_perspectives.invoke({"question": initial_question})
         questions = self.llm.invoke(questions_gen_prompt)
 
+        questions = questions.content.split("\n")
+        if len(questions) > k:
+            questions = questions[:k]
+        questions.append(initial_question)
+
         docs = {}
 
-        for question in questions.content.split("\n"):
+        for question in questions:
             docs[question], scores = zip(*self._vector_store.similarity_search_with_score(question, k))
             for doc, score in zip(docs[question], scores):
                 doc.metadata["score"] = score

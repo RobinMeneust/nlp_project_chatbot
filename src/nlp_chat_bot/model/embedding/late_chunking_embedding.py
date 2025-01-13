@@ -1,8 +1,4 @@
-import gc
-
-import numpy as np
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from tqdm import tqdm
 from transformers import AutoModel
 from transformers import AutoTokenizer
 import torch

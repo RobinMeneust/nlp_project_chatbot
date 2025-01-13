@@ -1,3 +1,5 @@
+import time
+
 import streamlit as st
 from numpy.lib.user_array import container
 
@@ -25,16 +27,18 @@ st.title(st.session_state.app.get_name())
 def update_rag():
     with st.spinner('Loading...'):
         st.session_state.app = ChatBotApp(
-            rag_model=st.session_state["rag_mode"],
-            is_late_chunking=st.session_state["is_late_chunking"]
+            rag_mode=st.session_state["rag_mode"],
+            is_late_chunking=st.session_state["is_late_chunking"],
+            llm_model_name=st.session_state["llm_model"]
         )
 
 def update_docs():
     with st.spinner('Loading documents...'):
         st.session_state.app = ChatBotApp(
-            rag_model=st.session_state["rag_mode"],
+            rag_mode=st.session_state["rag_mode"],
             is_late_chunking=st.session_state["is_late_chunking"],
-            update_docs=True
+            update_docs=True,
+            llm_model_name=st.session_state["llm_model"]
         )
 
 def clear_docs():
@@ -58,7 +62,12 @@ with st.sidebar:
 
     st.subheader("Choose chunking mode")
     with st.expander(label="Show/Hide", expanded=True):
-        st.session_state["is_late_chunking"] = st.checkbox("Enable late chunking", st.session_state["is_late_chunking"], on_change=update_rag)
+        st.checkbox("Enable late chunking", st.session_state["is_late_chunking"], on_change=update_rag)
+    st.divider()
+
+    st.subheader("Choose LLM model")
+    with st.expander(label="Show/Hide", expanded=True):
+        st.session_state["llm_model"] = st.radio("LLM model", ["gemini-1.5-flash", "gemma-2b", "mistral-7b"], index=0, on_change=update_rag)
     st.divider()
 
     st.subheader("Update documents from data folder")
