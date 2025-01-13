@@ -1,4 +1,7 @@
+import gc
+
 import chromadb
+import torch
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 
@@ -97,3 +100,8 @@ class ChatBotApp:
 
     def clear_documents(self):
         self._rag.reset_db()
+
+    def __del__(self):
+        del self._rag
+        gc.collect()
+        torch.cuda.empty_cache()

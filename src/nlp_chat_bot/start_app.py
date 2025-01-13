@@ -13,7 +13,7 @@ from nlp_chat_bot.app import ChatBotApp
 if "rag_mode" not in st.session_state:
     st.session_state.rag_mode = "none"
 
-if "chunking_mode" not in st.session_state:
+if "is_late_chunking" not in st.session_state:
     st.session_state.is_late_chunking = True
 
 if "app" not in st.session_state:
@@ -22,6 +22,9 @@ if "app" not in st.session_state:
 
 if "is_chat_history_on" not in st.session_state:
     st.session_state.is_chat_history_on = False
+
+if "llm_model" not in st.session_state:
+    st.session_state.llm_model = "gemini-1.5-flash"
 
 # App Initialization
 st.title(st.session_state.app.get_name())

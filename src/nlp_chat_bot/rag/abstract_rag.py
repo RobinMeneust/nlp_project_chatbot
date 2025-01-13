@@ -1,5 +1,7 @@
+import gc
 from abc import ABC, abstractmethod
 
+import torch
 from typing_extensions import List, TypedDict
 from langchain_core.documents import Document
 from langchain import hub
@@ -46,3 +48,6 @@ class AbstractRAG(ABC):
         graph_builder = StateGraph(State).add_sequence([self.retrieve, self.generate])
         graph_builder.add_edge(START, "retrieve")
         self._graph = graph_builder.compile()
+
+    def __del__(self):
+        del self.llm
