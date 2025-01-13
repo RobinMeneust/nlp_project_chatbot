@@ -8,7 +8,17 @@ from langchain_core.messages import AIMessage
 
 
 class Mistral:
+    """ This class is a wrapper around the Mistral model (MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.Q8_0.gguf) to embed queries and documents
+
+    Attributes:
+        _llm (LlamaCpp): The Mistral model
+    """
     def __init__(self, model_download_path):
+        """Initializes the Mistral object
+
+        Args:
+            model_download_path (str): The path to download the model
+        """
         model_file = hf_hub_download(
             repo_id="MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF",
             filename="Mistral-7B-Instruct-v0.3.Q8_0.gguf",
@@ -26,11 +36,20 @@ class Mistral:
         )
 
     def invoke(self, prompt):
+        """Invokes the model with the given prompt
+
+        Args:
+            prompt (str): The prompt to use
+
+        Returns:
+            AIMessage: The response from the model
+        """
         if isinstance(prompt, str):
             return AIMessage(self._llm(prompt))
         return AIMessage(self._llm(prompt.messages[0].content))
 
     def __del__(self):
+        """Deletes the Mistral model (free VRAM)"""
         self._llm = None
         gc.collect()
         torch.cuda.empty_cache()

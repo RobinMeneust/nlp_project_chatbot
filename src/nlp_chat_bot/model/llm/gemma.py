@@ -8,7 +8,17 @@ from langchain_core.messages import AIMessage
 
 
 class Gemma:
+    """ This class is a wrapper around the Gemma model (MaziyarPanahi/gemma-2-2b-it-GGUF/gemma-2-2b-it.IQ1_M.gguf) to embed queries and documents
+
+    Attributes:
+        _llm (LlamaCpp): The Gemma model
+    """
     def __init__(self, model_download_path):
+        """Initializes the Gemma object
+
+        Args:
+            model_download_path (str): The path to download the model
+        """
         model_file = hf_hub_download(
             repo_id="MaziyarPanahi/gemma-2-2b-it-GGUF",
             filename="gemma-2-2b-it.IQ1_M.gguf",
@@ -26,11 +36,20 @@ class Gemma:
         )
 
     def invoke(self, prompt):
+        """Invokes the model with the given prompt
+
+        Args:
+            prompt (str): The prompt to use
+
+        Returns:
+            AIMessage: The response from the model
+        """
         if isinstance(prompt, str):
             return AIMessage(self._llm(prompt))
         return AIMessage(self._llm(prompt.messages[0].content))
 
     def __del__(self):
+        """Deletes the Gemma model (free VRAM)"""
         self._llm = None
         gc.collect()
         torch.cuda.empty_cache()

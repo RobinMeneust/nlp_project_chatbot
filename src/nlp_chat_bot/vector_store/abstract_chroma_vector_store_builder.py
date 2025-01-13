@@ -12,7 +12,28 @@ from nlp_chat_bot.doc_loader.document_loader import DocumentLoader
 
 
 class AbstractChromaVectorStoreBuilder(ABC):
+    """Abstract class for the Chroma vector store builder
+
+    Attributes:
+        _document_loader (DocumentLoader): The document loader to use
+        _embedding_function (object): The embedding function to use
+        _vector_store_path (str): The path to the vector store
+        _splitter (object): The splitter to use
+        _data_path (str): The path to the data
+        _collection_name (str): The name of the collection
+        _batch_size (int): The batch size to use
+    """
     def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, document_loader=None, batch_size=1000):
+        """Initializes the AbstractChromaVectorStoreBuilder object
+
+        Args:
+            data_path (str): The path to the data
+            embedding_function (object): The embedding function to use
+            vector_store_path (str): The path to the vector store
+            splitter (object): The splitter to use
+            document_loader (DocumentLoader): The document loader to use. If None, a default one will be used
+            batch_size (int): The batch size to use
+        """
         if document_loader is None:
             self._document_loader = DocumentLoader()
         else:
@@ -25,9 +46,28 @@ class AbstractChromaVectorStoreBuilder(ABC):
         self._batch_size = batch_size if batch_size is not None and batch_size > 0 else 10000
 
     def build(self, update_docs=True, reset=False) -> langchain_chroma.vectorstores.Chroma:
+        """Builds the vector store
+
+        Args:
+            update_docs (bool): Whether to update the documents (i.e. add new ones if any)
+            reset (bool): Whether to reset the vector store (i.e. delete all documents)
+
+        Returns:
+            Chroma: The vector store
+        """
         return self._init_vector_store(self._data_path, update_docs, reset)
 
     def _init_vector_store(self, data_path, update_docs, reset):
+        """Initializes the vector store
+
+        Args:
+            data_path (str): The path to the data
+            update_docs (bool): Whether to update the documents (i.e. add new ones if any)
+            reset (bool): Whether to reset the vector store (i.e. delete all documents)
+
+        Returns:
+            Chroma: The vector store object of Langchain
+        """
         chroma_client = chromadb.PersistentClient(self._vector_store_path)
 
         if reset:
@@ -54,4 +94,10 @@ class AbstractChromaVectorStoreBuilder(ABC):
 
     @abstractmethod
     def _load_docs(self, collection, docs):
+        """Loads the documents to the collection
+
+        Args:
+            collection (object): The collection object
+            docs (list): The list of documents
+        """
         pass

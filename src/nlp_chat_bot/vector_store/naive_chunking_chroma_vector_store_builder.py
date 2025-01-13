@@ -4,10 +4,37 @@ from nlp_chat_bot.vector_store.abstract_chroma_vector_store_builder import Abstr
 
 
 class NaiveChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
+    """Class for the Naive Chunking Chroma Vector Store Builder
+
+    Attributes:
+        _document_loader (DocumentLoader): The document loader to use
+        _embedding_function (object): The embedding function to use
+        _vector_store_path (str): The path to the vector store
+        _splitter (object): The splitter to use
+        _data_path (str): The path to the data
+    """
     def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, document_loader=None):
+        """Initializes the NaiveChunkingChromaVectorStoreBuilder object
+
+        Args:
+            data_path (str): The path to the data
+            embedding_function (object): The embedding function to use
+            vector_store_path (str): The path to the vector store
+            splitter (object): The splitter to use
+            document_loader (DocumentLoader): The document loader to use. If None, a default one will be used
+        """
         super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader)
 
     def _filter_existing_docs(self, collection, docs):
+        """Filters the existing documents (i.e. only keeps the ones that are not in the collection)
+
+        Args:
+            collection (Chroma): The collection to use
+            docs (list): The documents to filter
+
+        Returns:
+            list: The filtered documents
+        """
         existing_ids = set(collection.get()["ids"])
 
         if len(existing_ids) == 0:
@@ -23,6 +50,12 @@ class NaiveChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
         return filtered_docs
 
     def _add_unique_to_collection(self, collection, docs):
+        """Adds unique documents to the collection
+
+        Args:
+            collection (Chroma): The collection to use
+            docs (list): The documents to add
+        """
         if len(docs) == 0:
             return
 
@@ -53,6 +86,12 @@ class NaiveChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
        )
 
     def _load_docs(self, collection, docs):
+        """Loads the documents to the collection
+
+        Args:
+            collection (object): The collection object
+            docs (list): The list of documents
+        """
         if self._splitter is not None:
             docs = self._splitter.split_documents(docs)
         docs = self._filter_existing_docs(collection, docs)

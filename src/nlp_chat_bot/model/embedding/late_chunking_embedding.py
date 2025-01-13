@@ -4,7 +4,22 @@ from transformers import AutoTokenizer
 import torch
 
 class LateChunkingEmbedding:
+    """ This class is used to embed documents using the late chunking technique
+
+    Attributes:
+        _model (AutoModel): The model used to embed the documents
+        _tokenizer (AutoTokenizer): The tokenizer used to tokenize the documents
+        _device (torch.device): The device to use for the model
+        _max_tokens (int): The maximum number of tokens allowed in a document
+        _splitter_max_tokens (RecursiveCharacterTextSplitter): The splitter used to split the documents into chunks  (applied after an initial split to prevent tokenization errors (max tokens limit))
+    """
     def __init__(self, model_download_path, device=torch.device('cuda')):
+        """Initializes the LateChunkingEmbedding object
+
+        Args:
+            model_download_path (str): The path to download the model
+            device (torch.device): The device to use for the model
+        """
         self._model = AutoModel.from_pretrained("jinaai/jina-embeddings-v2-small-en", cache_dir=model_download_path, trust_remote_code=True)
         self._tokenizer = AutoTokenizer.from_pretrained("jinaai/jina-embeddings-v2-small-en", cache_dir=model_download_path, trust_remote_code=True)
         self._model.to(device)
@@ -15,10 +30,25 @@ class LateChunkingEmbedding:
         )
 
     def get_splitter_max_tokens(self):
+        """Returns the splitter used to split the documents into chunks
+
+        Returns:
+            RecursiveCharacterTextSplitter: The splitter used to split the documents into chunks
+        """
         return self._splitter_max_tokens
 
     # based on https://github.com/jina-ai/late-chunking
     def _chunk(self, doc, chunk_texts):
+        """Chunks the document into smaller parts
+
+        Args:
+            doc (str): The document to chunk
+            chunk_texts (list): The texts of the chunks used to compute chunks length to delimit chunks
+
+        Returns:
+            dict: Dict containing the tokens of the document
+            list: The annotations of the chunks
+        """
         tokens = self._tokenizer(doc, return_tensors="pt", return_offsets_mapping = True)
         if len(tokens['input_ids'][0]) > self._max_tokens:
             raise Exception(f"Document is too long: {len(tokens['input_ids'][0])} tokens")
@@ -27,8 +57,6 @@ class LateChunkingEmbedding:
             end_char_indices.append((end_char_indices[-1] + len(chunk_texts[i])))
 
         offsets = tokens['offset_mapping'][0]
-
-
 
         span_annotations = []
 
@@ -86,6 +114,15 @@ class LateChunkingEmbedding:
         return tokens, span_annotations
 
     def _late_chunking(self, tokens_embeddings, span_annotations):
+        """Compute the pooled embeddings for each chunk
+
+        Args:
+            tokens_embeddings (torch.Tensor): The embeddings of the tokens
+            span_annotations (list): The annotations of the chunks
+
+        Returns:
+            list: The embeddings for each chunk
+        """
         # https://colab.research.google.com/drive/15vNZb6AsU7byjYoaEtXuNu567JWNzXOz?usp=sharing
         chunks_embeddings = []
         for embeddings, annotations in zip(tokens_embeddings, span_annotations):
@@ -101,6 +138,15 @@ class LateChunkingEmbedding:
 
 
     def embed_documents(self, docs, chunks):
+        """Embeds the documents using the late chunking technique
+
+        Args:
+            docs (list): The documents to embed
+            chunks (list): The chunks of the documents
+
+        Returns:
+            list: The embeddings of the documents
+        """
         docs_embeddings = []
 
         for i in range(len(docs)):
@@ -121,7 +167,20 @@ class LateChunkingEmbedding:
         return docs_embeddings
 
     def embed_query(self, query):
+        """Embeds the query using the model
+
+        Args:
+            query (str): The query to embed
+
+        Returns:
+            torch.Tensor: The embedding of the query
+        """
         return self._model.encode(query)
 
     def get_id(self):
+        """Returns the id of the model (used for saving the embeddings in different vector stores)
+
+        Returns:
+            str: The id of the model
+        """
         return "late_chunking_embedding_jinaai"

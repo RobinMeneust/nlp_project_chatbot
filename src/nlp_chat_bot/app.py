@@ -21,7 +21,27 @@ from nlp_chat_bot.vector_store.late_chunking_chroma_vector_store_builder import 
 
 
 class ChatBotApp:
+    """Class for the ChatBotApp
+
+    Attributes:
+        _chatbot_name (str): The name of the chatbot
+        _update_docs (bool): Whether to update the documents
+        _rag_model_class (object): The RAG model class to use
+        _is_late_chunking (bool): Whether to use late chunking
+        history_max_length (int): The maximum length of the history
+        _llm_model_name (str): The name of the LLM model
+        _rag (object): The RAG model
+    """
     def __init__(self, chatbot_name="My Assistant", update_docs=False, rag_mode="none", is_late_chunking=True, llm_model_name="gemini-1.5-flash"):
+        """Initializes the ChatBotApp object
+
+        Args:
+            chatbot_name (str): The name of the chatbot
+            update_docs (bool): Whether to update the documents
+            rag_mode (str): The RAG mode to use
+            is_late_chunking (bool): Whether to use late chunking
+            llm_model_name (str): The name of the LLM model
+        """
         print(f"ChatBotApp(chatbot_name={chatbot_name}, update_docs={update_docs}, rag_mode={rag_mode}, is_late_chunking={is_late_chunking}, llm_model_name={llm_model_name})")
         rags_models = {
             "none": ClassicRAG,
@@ -42,6 +62,11 @@ class ChatBotApp:
         self._rag = self._init_rag()
 
     def _init_rag(self):
+        """Initializes the RAG model
+
+        Returns:
+            object: The RAG model
+        """
         print("Initializing RAG...")
         chromadb.api.client.SharedSystemClient.clear_system_cache()
         # get current file parent
@@ -90,18 +115,34 @@ class ChatBotApp:
         )
 
     def get_name(self):
+        """Gets the name of the chatbot
+
+        Returns:
+            str: The name of the chatbot
+        """
         return self._chatbot_name
 
     def invoke(self, query, chat_history=None):
+        """Invokes the chatbot with the given query
+
+        Args:
+            query (str): The query to use
+            chat_history (list): The chat history to use
+
+        Returns:
+            AIMessage: The response from the chatbot
+        """
         if chat_history is not None:
             query["chat_history"] = chat_history[-self.history_max_length:]
             return self._rag.invoke(query=query)
         return self._rag.invoke(query=query)
 
     def clear_documents(self):
+        """Clears the documents in the vector store"""
         self._rag.reset_db()
 
     def __del__(self):
+        """Destructor for the ChatBotApp object (i.e. clears the RAG model and should thus free the VRAM)"""
         del self._rag
         gc.collect()
         torch.cuda.empty_cache()

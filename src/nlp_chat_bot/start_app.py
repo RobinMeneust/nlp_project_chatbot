@@ -30,6 +30,12 @@ if "llm_model" not in st.session_state:
 st.title(st.session_state.app.get_name())
 
 def update_rag(message="Loading...", update_docs=False):
+    """Update the RAG model
+
+    Args:
+        message (str): The message to display
+        update_docs (bool): Whether to update the documents
+    """
     if st.session_state.app is not None:
         del st.session_state.app
         gc.collect()
@@ -43,9 +49,11 @@ def update_rag(message="Loading...", update_docs=False):
         )
 
 def update_docs():
+    """Update the documents"""
     update_rag("Updating documents...", update_docs=True)
 
 def clear_docs():
+    """Clear the documents"""
     with st.spinner('Clearing documents...'):
         st.session_state.app.clear_documents()
 

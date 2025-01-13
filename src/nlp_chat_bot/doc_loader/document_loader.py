@@ -5,8 +5,15 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.document_loaders import TextLoader
 
 
-class DocumentLoader():      
+class DocumentLoader():
+    """ DocumentLoader class to load documents from a directory
+
+    Attributes:
+        loaders (dict): A dictionary of file extensions and their respective loader classes
+        loaders_kwargs (dict): A dictionary of file extensions and their respective loader kwargs
+    """
     def __init__(self) -> None:
+        """ Initialize DocumentLoader"""
         self.loaders = {
             '.pdf': PyPDFLoader,
             '.csv': CSVLoader,
@@ -22,6 +29,14 @@ class DocumentLoader():
         }
 
     def load(self, data_path):
+        """ Load documents from a directory and only process the files with the extensions specified in the loaders attribute
+
+        Args:
+            data_path (str): Path to the directory containing the documents
+
+        Returns:
+            list: A list of loaded documents
+        """
         docs = []
         for file_type, loader_cls in self.loaders.items():
             loader = DirectoryLoader(

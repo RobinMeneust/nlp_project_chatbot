@@ -13,7 +13,27 @@ from nlp_chat_bot.vector_store.abstract_chroma_vector_store_builder import Abstr
 
 
 class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
+    """Class for the Late Chunking Chroma Vector Store Builder
+
+    Attributes:
+        _document_loader (DocumentLoader): The document loader to use
+        _embedding_function (object): The embedding function to use
+        _vector_store_path (str): The path to the vector store
+        _splitter (object): The splitter to use
+        _data_path (str): The path to the data
+        _collection_name (str): The name of the collection
+        _batch_size (int): The batch size to use
+    """
     def __init__(self, data_path, embedding_function, vector_store_path, splitter=None, document_loader=None):
+        """Initializes the LateChunkingChromaVectorStoreBuilder object
+
+        Args:
+            data_path (str): The path to the data
+            embedding_function (object): The embedding function to use
+            vector_store_path (str): The path to the vector store
+            splitter (object): The splitter to use
+            document_loader (DocumentLoader): The document loader to use. If None, a default one will be used
+        """
         super().__init__(data_path, embedding_function, vector_store_path, splitter, document_loader, batch_size=100)
         if self._splitter is None:
             raise ValueError("Late chunking requires a splitter, because it's then equivalent to naive chunking so you should use NaiveChunkingChromaVectorStoreBuilder instead")
@@ -22,6 +42,17 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
             raise ValueError("Late chunking requires a splitter with no overlap")
 
     def _filter_existing_docs(self, collection, docs, chunks):
+        """Filters the existing documents (i.e. only keeps the ones that are not in the collection)
+
+        Args:
+            collection (Chroma): The collection to use
+            docs (list): The documents to filter
+            chunks (list): The chunks to filter
+
+        Returns:
+            list: The filtered documents
+            list: The filtered chunks
+        """
         existing_ids = set(collection.get()["ids"])
 
         if len(existing_ids) == 0:
@@ -45,6 +76,14 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
         return filtered_docs, filtered_chunks
 
     def _add_unique_to_collection(self, collection, docs, chunks):
+        """Adds unique documents to the collection
+
+        Args:
+            collection (Chroma): The collection to use
+            docs (list): The documents to add
+            chunks (list): The chunks to add
+
+        """
         if len(docs) == 0:
             return
 
@@ -94,6 +133,12 @@ class LateChunkingChromaVectorStoreBuilder(AbstractChromaVectorStoreBuilder):
 
 
     def _load_docs(self, collection, docs):
+        """Loads the documents to the collection
+
+        Args:
+            collection (object): The collection object
+            docs (list): The list of documents
+        """
         # 1st split so that the model can handle the input
         splitter_max_tokens = self._embedding_function.get_splitter_max_tokens()
         docs = splitter_max_tokens.split_documents(docs)
