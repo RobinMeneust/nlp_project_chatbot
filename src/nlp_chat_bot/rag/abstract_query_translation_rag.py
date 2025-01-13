@@ -14,7 +14,6 @@ class AbstractQueryTranslationRAG(AbstractRAG, ABC):
         self._prompt_perspectives = ChatPromptTemplate.from_template(template)
 
     def _retrieve_docs_multiple_questions(self, initial_question, k):
-        print("retrieving documents (Multiple Questions)")
         questions_gen_prompt = self._prompt_perspectives.invoke({"question": initial_question})
         questions = self.llm.invoke(questions_gen_prompt)
 

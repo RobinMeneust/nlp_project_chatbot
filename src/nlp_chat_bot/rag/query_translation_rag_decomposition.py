@@ -11,7 +11,6 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
         self._compile()
 
     def retrieve(self, state: State, k: int = 3):
-        print("retrieving documents (Decomposition)")
         try:
             docs_per_question = self._retrieve_docs_multiple_questions(state["question"], k)
             return {"context": docs_per_question}
@@ -21,7 +20,6 @@ class QueryTranslationRAGDecomposition(AbstractQueryTranslationRAG):
             return {"context": {}}
 
     def generate(self, state: State):
-        print("generating response (Decomposition)")
         docs_per_question = state["context"]
 
         context_qa = ""

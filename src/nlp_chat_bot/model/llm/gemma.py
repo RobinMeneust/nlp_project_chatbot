@@ -1,4 +1,7 @@
+import gc
 import os
+
+import torch
 from langchain_community.llms import LlamaCpp
 from huggingface_hub import hf_hub_download
 from langchain_core.messages import AIMessage
@@ -19,12 +22,21 @@ class Gemma:
             max_tokens=300,
             top_p=0.85,
             n_gpu_layers=-1,  # nombre de couches à chargers sur le GPU
-            verbose=True
+            # verbose=False
         )
 
     def invoke(self, prompt):
-        print("########")
+        if isinstance(prompt, str):
+            return AIMessage(self._llm(prompt))
         return AIMessage(self._llm(prompt.messages[0].content))
+
+    def __del__(self):
+        self._llm = None
+        gc.collect()
+        torch.cuda.empty_cache()
+
+
+
 
 # if __name__ == "__main__":
 #     root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.join(os.path.dirname(__file__))))))

@@ -1,6 +1,8 @@
+import gc
 import time
 
 import streamlit as st
+import torch
 from numpy.lib.user_array import container
 
 from nlp_chat_bot.app import ChatBotApp
@@ -24,22 +26,21 @@ if "is_chat_history_on" not in st.session_state:
 # App Initialization
 st.title(st.session_state.app.get_name())
 
-def update_rag():
-    with st.spinner('Loading...'):
+def update_rag(message="Loading...", update_docs=False):
+    if st.session_state.app is not None:
+        del st.session_state.app
+        gc.collect()
+        torch.cuda.empty_cache()
+    with st.spinner(message):
         st.session_state.app = ChatBotApp(
             rag_mode=st.session_state["rag_mode"],
             is_late_chunking=st.session_state["is_late_chunking"],
-            llm_model_name=st.session_state["llm_model"]
+            llm_model_name=st.session_state["llm_model"],
+            update_docs=update_docs
         )
 
 def update_docs():
-    with st.spinner('Loading documents...'):
-        st.session_state.app = ChatBotApp(
-            rag_mode=st.session_state["rag_mode"],
-            is_late_chunking=st.session_state["is_late_chunking"],
-            update_docs=True,
-            llm_model_name=st.session_state["llm_model"]
-        )
+    update_rag("Updating documents...", update_docs=True)
 
 def clear_docs():
     with st.spinner('Clearing documents...'):
@@ -52,22 +53,22 @@ with st.sidebar:
 
     st.subheader("Enable chat history")
     with st.expander(label="Show/Hide", expanded=True):
-        st.session_state["is_chat_history_on"] = st.checkbox("Enable history", st.session_state["is_chat_history_on"])
+        st.checkbox("Enable history", key="is_chat_history_on")
     st.divider()
 
     st.subheader("Choose a query translation method (classic means \"no translation\")")
     with st.expander(label="Show/Hide", expanded=True):
-        st.session_state["rag_mode"] = st.radio("Query translation method", ["none", "decomposition", "fusion"], index=0, on_change=update_rag)
+        st.radio("Query translation method", ["none", "decomposition", "fusion"], key="rag_mode", index=0, on_change=update_rag)
     st.divider()
 
     st.subheader("Choose chunking mode")
     with st.expander(label="Show/Hide", expanded=True):
-        st.checkbox("Enable late chunking", st.session_state["is_late_chunking"], on_change=update_rag)
+        st.checkbox("Enable late chunking", key="is_late_chunking", on_change=update_rag)
     st.divider()
 
     st.subheader("Choose LLM model")
     with st.expander(label="Show/Hide", expanded=True):
-        st.session_state["llm_model"] = st.radio("LLM model", ["gemini-1.5-flash", "gemma-2b", "mistral-7b"], index=0, on_change=update_rag)
+        st.radio("LLM model", ["gemini-1.5-flash", "gemma-2b", "mistral-7b"], key="llm_model", index=0, on_change=update_rag)
     st.divider()
 
     st.subheader("Update documents from data folder")
@@ -97,15 +98,16 @@ if prompt := st.chat_input("How can I help you?"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    try:
-        if st.session_state["is_chat_history_on"]:
-            output = st.session_state.app.invoke(query={"question": prompt}, chat_history=st.session_state.messages)
-        else:
-            output = st.session_state.app.invoke(query={"question": prompt})
-        answer = output["answer"]
-    except Exception as e:
-        answer = f"Sorry. An error occurred"
-        st.exception(e)
+    with st.spinner("Processing..."):
+        try:
+            if st.session_state["is_chat_history_on"]:
+                output = st.session_state.app.invoke(query={"question": prompt}, chat_history=st.session_state.messages)
+            else:
+                output = st.session_state.app.invoke(query={"question": prompt})
+            answer = output["answer"]
+        except Exception as e:
+            answer = f"Sorry. An error occurred"
+            st.exception(e)
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):

@@ -7,7 +7,6 @@ class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
         self._compile()
 
     def retrieve(self, state: State, k: int = 3):
-        print("retrieving documents (Fusion)")
         try:
             docs_per_question = self._retrieve_docs_multiple_questions(state["question"], k)
             docs = []
@@ -20,7 +19,6 @@ class QueryTranslationRAGFusion(AbstractQueryTranslationRAG):
             return {"context": docs}
 
         except Exception as e:
-            print("Error in retrieving documents: ", e)
             return {"context": []}
 
     def generate(self, state: State):
