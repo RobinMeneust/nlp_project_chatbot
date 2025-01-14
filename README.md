@@ -1,5 +1,7 @@
 # nlp_project_chatbot
 
+Student project for the NLP course. We implement here a RAG (Retrieval Augmented Generation) chatbot
+
 ## Install
 
 `conda env create -f environment.yaml`
@@ -48,6 +50,8 @@ But we also used the first 1012 lines of [MPST: Movie Plot Synopses with Tags](h
 Just place your documents (.pdf, .csv, .html or .txt) in the `data` folder.
 
 ## Usage
+
+You can either look at the notebooks in the `notebooks` folder or run the app with the following command:
 
 `python -m streamlit run src/nlp_chat_bot/start_app.py`
 
